@@ -1,6 +1,6 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
-import BHeader from './components/Bheader.vue'
+import BHeader from './components/BHeader.vue'
 </script>
 
 <template>
