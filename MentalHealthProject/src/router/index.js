@@ -14,11 +14,6 @@ import { ref } from 'vue'
 
 const isAuthenticated = ref(false)
 
-const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes
-})
-
 const routes = [
   {
     path: '/',
@@ -51,7 +46,7 @@ const routes = [
     component: () => import('../views/ArticlesView.vue')
   },
   {
-    path: 'login',
+    path: '/login',
     name: 'login',
     component: () => import('../views/LoginView.vue')
   },
@@ -76,6 +71,11 @@ const routes = [
     component: () => import('../views/TestsView.vue')
   }
 ]
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes
+})
 
 export default router
 export { isAuthenticated }
