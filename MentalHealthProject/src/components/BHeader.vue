@@ -36,31 +36,27 @@ const logout = () => {
         </li>
 
         <li class="nav-item">
-          <router-link to="/login" class="nav-link" active-class="active">Self Tests</router-link>
+          <router-link to="/tests" class="nav-link" active-class="active">Self Tests</router-link>
         </li>
 
         <li class="nav-item">
-          <router-link to="/appointments" class="nav-link" active-class="active"
+          <router-link to="/moodtrack" class="nav-link" active-class="active"
             >Mood Tracking</router-link
           >
         </li>
 
         <li class="nav-item">
-          <router-link to="/appointments" class="nav-link" active-class="active"
-            >Resources</router-link
+          <router-link to="/resource" class="nav-link" active-class="active">Resources</router-link>
+        </li>
+
+        <li class="nav-item">
+          <router-link to="/appointment" class="nav-link" active-class="active"
+            >Appointment</router-link
           >
         </li>
 
         <li class="nav-item">
-          <router-link to="/appointments" class="nav-link" active-class="active"
-            >Appointments</router-link
-          >
-        </li>
-
-        <li class="nav-item">
-          <router-link to="/appointments" class="nav-link" active-class="active"
-            >Articles</router-link
-          >
+          <router-link to="/articles" class="nav-link" active-class="active">Articles</router-link>
         </li>
       </ul>
     </header>
