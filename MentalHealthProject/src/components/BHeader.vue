@@ -11,15 +11,19 @@ const logout = () => {
 </script>
 
 <template>
-  <div class="container">
-    <header class="d-flex justify-content-center py-3">
-      <ul class="nav nav-pills">
+  <div class="container-fluid">
+    <header class="d-flex justify-content-between align-items-center py-3">
+      <h1 class="navbar-brand mb-0 mx-auto" style="order: 1; font-weight: bold; padding-left: 20px">
+        MINDBRIDGE
+      </h1>
+      <ul class="nav nav-pills flex-grow-1 justify-content-center" style="order: 2">
         <li class="nav-item">
           <router-link to="/" class="nav-link" active-class="active" aria-current="page"
             >Home</router-link
           >
         </li>
-        <li class="nav-item" v-if="isAuthenticated">
+
+        <!-- <li class="nav-item" v-if="isAuthenticated">
           <router-link to="/about" class="nav-link" active-class="active">About</router-link>
         </li>
 
@@ -33,7 +37,7 @@ const logout = () => {
 
         <li class="nav-item" v-if="isAuthenticated">
           <button class="nav-link btn tn-link" @click="logout">Logout</button>
-        </li>
+        </li> -->
 
         <li class="nav-item">
           <router-link to="/tests" class="nav-link" active-class="active">Self Tests</router-link>
@@ -50,13 +54,26 @@ const logout = () => {
         </li>
 
         <li class="nav-item">
+          <router-link to="/articles" class="nav-link" active-class="active">Articles</router-link>
+        </li>
+
+        <li class="nav-item">
           <router-link to="/appointment" class="nav-link" active-class="active"
             >Appointment</router-link
           >
         </li>
 
         <li class="nav-item">
-          <router-link to="/articles" class="nav-link" active-class="active">Articles</router-link>
+          <router-link to="/admin" class="nav-link" active-class="active"
+            >Adimin Dashboard</router-link
+          >
+        </li>
+      </ul>
+      <ul class="nav" style="order: 3; padding-right: 20px">
+        <li class="nav-item">
+          <router-link to="/login" class="btn btn-outline-light login-button" active-class="active"
+            >Login</router-link
+          >
         </li>
       </ul>
     </header>
@@ -64,38 +81,52 @@ const logout = () => {
 </template>
 
 <style scoped>
-.b-example-divider {
-  height: 3rem;
-  background-color: rgba(0, 0, 0, 0.1);
-  border: solid rgba(0, 0, 0, 0.15);
-  border-width: 1px 0;
-  box-shadow:
-    inset 0 0.5em 1.5em rgba(0, 0, 0, 0.1),
-    inset 0 0.125em 0.5em rgba(0, 0, 0, 0.15);
+.container-fluid {
+  background-color: #395244; /* Dark green background */
+  color: #f6f0e7; /* Light beige text color */
+  padding-left: 0;
+  padding-right: 0;
 }
 
-.form-control-dark {
-  color: #fff;
-  background-color: var(--bs-dark);
-  border-color: var(--bs-gray);
-}
-.form-control-dark:focus {
-  color: #fff;
-  background-color: var(--bs-dark);
-  border-color: #fff;
-  box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.25);
+.navbar-brand {
+  font-family: 'Roboto', sans-serif;
+  color: #f6f0e7;
+  font-size: 1.5em;
+  font-weight: bold;
 }
 
-.bi {
-  vertical-align: -0.125em;
-  fill: currentColor;
+.nav-link {
+  font-family: 'Roboto', sans-serif;
+  color: #f6f0e7;
 }
 
-.text-small {
-  font-size: 85%;
+.nav-link:hover {
+  color: #395244; /* Dark green text on focus/hover */
+  background-color: #f6f0e7; /* Light beige background on focus/hover */
 }
 
-.dropdown-toggle {
-  outline: 0;
+.nav-link:focus {
+  color: #395244; /* Dark green text on focus/hover */
+  background-color: #f6f0e7; /* Light beige background on focus/hover */
+  outline: none !important;
+}
+
+.login-button {
+  border: 2px solid #f6f0e7; /* Add a border to the login button */
+  border-radius: 5px; /* Rounded corners for the border */
+  color: #f6f0e7; /* Text color for the button */
+}
+
+.login-button:focus,
+.login-button:hover {
+  background-color: #f6f0e7; /* Background color on focus and hover */
+  color: #395244; /* Text color on focus and hover */
+}
+
+@media (max-width: 768px) {
+  .nav-pills {
+    flex-direction: column; /* Stack the links vertically on small screens */
+    align-items: center;
+  }
 }
 </style>
