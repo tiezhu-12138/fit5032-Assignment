@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { ref } from 'vue'
 
 const isAuthenticated = ref(false)
+const isAdmin = ref(false)
+const isSupport = ref(false)
 
 const routes = [
   {
@@ -17,17 +19,38 @@ const routes = [
   {
     path: '/account',
     name: 'account',
-    component: () => import('../views/AccountView.vue')
+    component: () => import('../views/AccountView.vue'),
+    beforenter: (to, from, next) => {
+      if (isAuthenticated.value) {
+        next()
+      } else {
+        next({ name: 'login' })
+      }
+    }
   },
   {
     path: '/admin',
     name: 'admin',
-    component: () => import('../views/AdminView.vue')
+    component: () => import('../views/AdminView.vue'),
+    beforenter: (to, from, next) => {
+      if (isAdmin.value && isAuthenticated.value) {
+        next()
+      } else {
+        next({ name: 'login' })
+      }
+    }
   },
   {
     path: '/appointment',
     name: 'appointment',
-    component: () => import('../views/AppointmentView.vue')
+    component: () => import('../views/AppointmentView.vue'),
+    beforenter: (to, from, next) => {
+      if (isAdmin.value || (isSupport.value && isAuthenticated.value)) {
+        next()
+      } else {
+        next({ name: 'login' })
+      }
+    }
   },
   {
     path: '/articles',
@@ -68,3 +91,5 @@ const router = createRouter({
 
 export default router
 export { isAuthenticated }
+export { isAdmin }
+export { isSupport }

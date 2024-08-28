@@ -1,12 +1,17 @@
 <script setup>
 import { isAuthenticated } from '../router/index.js'
+import { isAdmin } from '../router/index.js'
+import { isSupport } from '../router/index.js'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
 const logout = () => {
   isAuthenticated.value = false
-  router.push({ name: 'Login' })
+  isAdmin.value = false
+  isSupport.value = false
+
+  router.push({ name: 'home' })
 }
 </script>
 
@@ -22,22 +27,6 @@ const logout = () => {
             >Home</router-link
           >
         </li>
-
-        <!-- <li class="nav-item" v-if="isAuthenticated">
-          <router-link to="/about" class="nav-link" active-class="active">About</router-link>
-        </li>
-
-        <li class="nav-item" v-if="!isAuthenticated">
-          <router-link to="/login" class="nav-link" active-class="active">Login</router-link>
-        </li>
-
-        <li class="nav-item" v-else>
-          <button class="nav-link btn btn-link disabled">Login</button>
-        </li>
-
-        <li class="nav-item" v-if="isAuthenticated">
-          <button class="nav-link btn tn-link" @click="logout">Logout</button>
-        </li> -->
 
         <li class="nav-item">
           <router-link to="/tests" class="nav-link" active-class="active">Self Tests</router-link>
@@ -57,23 +46,30 @@ const logout = () => {
           <router-link to="/articles" class="nav-link" active-class="active">Articles</router-link>
         </li>
 
-        <li class="nav-item">
+        <li class="nav-item" v-if="isAdmin || (isSupport && isAuthenticated)">
           <router-link to="/appointment" class="nav-link" active-class="active"
             >Appointment</router-link
           >
         </li>
 
-        <li class="nav-item">
+        <li class="nav-item" v-if="isAdmin && isAuthenticated">
           <router-link to="/admin" class="nav-link" active-class="active"
             >Adimin Dashboard</router-link
           >
         </li>
+
+        <li class="nav-item" v-if="isAuthenticated">
+          <router-link to="/account" class="nav-link" active-class="active">Account</router-link>
+        </li>
       </ul>
       <ul class="nav" style="order: 3; padding-right: 20px">
-        <li class="nav-item">
+        <li class="nav-item" v-if="!isAuthenticated">
           <router-link to="/login" class="btn btn-outline-light login-button" active-class="active"
-            >Login</router-link
+            >Log in</router-link
           >
+        </li>
+        <li class="nav-item" v-if="isAuthenticated">
+          <button class="nav-link btn tn-link" @click="logout">Log out</button>
         </li>
       </ul>
     </header>
