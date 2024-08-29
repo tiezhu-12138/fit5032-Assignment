@@ -3,24 +3,37 @@ import { ref } from 'vue'
 import { isAuthenticated } from '../router/index.js'
 import { isAdmin } from '../router/index.js'
 import { isSupport } from '../router/index.js'
+import { role } from '../router/index.js'
 import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const formData = ref({
   username: '',
   password: ''
 })
 
-const username = 'username'
-const password = 'password'
-const router = useRouter()
-
 const submitForm = () => {
-  if (formData.value.username === username && formData.value.password === password) {
-    // alert('Login successful!')
-    isAuthenticated.value = true
-    router.push({ name: 'About' })
+  const username = formData.value.username
+  const password = formData.value.password
+
+  const users = JSON.parse(localStorage.getItem('user')) || []
+  const isUserRight = users.find((u) => u.username === username && u.password === password)
+  if (isUserRight) {
+    alert('Login successful!')
+    role.value = isUserRight.role
+    if (role.value === 'admin') {
+      isAdmin.value = true
+      isAuthenticated.value = true
+    } else if (role.value === 'support') {
+      isSupport.value = true
+      isAuthenticated.value = true
+    } else {
+      isAuthenticated.value = true
+    }
+    router.push({ name: 'home' })
   } else {
-    alert('Login failed. Please try again.')
+    alert('Invalid username or password. Please try again.')
   }
 }
 </script>

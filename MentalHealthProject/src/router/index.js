@@ -4,6 +4,7 @@ import { ref } from 'vue'
 const isAuthenticated = ref(false)
 const isAdmin = ref(false)
 const isSupport = ref(false)
+const role = ref('')
 
 const routes = [
   {
@@ -93,3 +94,4 @@ export default router
 export { isAuthenticated }
 export { isAdmin }
 export { isSupport }
+export { role }
