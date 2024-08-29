@@ -6,7 +6,6 @@ import { useRouter } from 'vue-router'
 import { ref } from 'vue'
 
 const router = useRouter()
-
 const userInfo = ref({
   username: '',
   password: ''
@@ -84,13 +83,13 @@ const validatePassword = (blur) => {
   }
 }
 
-// const validateConfirmPassword = (blur) => {
-//   if (formData.value.password !== formData.value.confirmPassword) {
-//     if (blur) errors.value.confirmPassword = 'Passwords do not match.'
-//   } else {
-//     errors.value.confirmPassword = null
-//   }
-// }
+const validateConfirmPassword = (blur) => {
+  if (userInfo.value.password !== userInfo.value.confirmPassword) {
+    if (blur) errors.value.confirmPassword = 'Passwords do not match.'
+  } else {
+    errors.value.confirmPassword = null
+  }
+}
 </script>
 
 <template>
@@ -133,6 +132,21 @@ const validatePassword = (blur) => {
             </div>
           </div>
 
+          <div class="row mb-3">
+            <div class="col-md-6 col-sm-6 offset-3">
+              <label for="confirmPassword">Confirm Password</label>
+              <Password
+                id="confirmPassword"
+                v-model="userInfo.confirmPassword"
+                @blur="() => validateConfirmPassword(true)"
+                :feedback="false"
+              />
+              <div v-if="errors.confirmPassword" class="text-danger">
+                {{ errors.confirmPassword }}
+              </div>
+            </div>
+          </div>
+
           <div class="text-center">
             <button type="submit" class="btn btn-primary me-2 mb-2">Sign up</button>
             <!-- <p class="text-center">
@@ -145,4 +159,31 @@ const validatePassword = (blur) => {
   </div>
 </template>
 
-<style></style>
+<style scoped>
+body {
+  background-color: #395244; /* Sets the background color of the entire page */
+  font-family: 'Roboto', sans-serif;
+}
+
+.container {
+  font-family: 'Roboto', sans-serif;
+  max-width: 80vw;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f6f0e7;
+  border-radius: 10px;
+}
+
+button {
+  background-color: #395244;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+</style>

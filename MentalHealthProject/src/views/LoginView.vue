@@ -7,18 +7,18 @@ import { role } from '../router/index.js'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-
+const sanitizeInput = (input) => input.replace(/<script.*?>.*?<\/script>/gi, '') // Basic XSS prevention
 const formData = ref({
   username: '',
   password: ''
 })
 
 const submitForm = () => {
-  const username = formData.value.username
-  const password = formData.value.password
-
+  const username = sanitizeInput(formData.value.username)
+  const password = sanitizeInput(formData.value.password)
   const users = JSON.parse(localStorage.getItem('user')) || []
   const isUserRight = users.find((u) => u.username === username && u.password === password)
+
   if (isUserRight) {
     alert('Login successful!')
     role.value = isUserRight.role
@@ -39,7 +39,6 @@ const submitForm = () => {
 </script>
 
 <template>
-  <!-- Library Login Form -->
   <div class="container mt-5">
     <div class="row">
       <div class="col-md-8 offset-md-2">
@@ -78,12 +77,30 @@ const submitForm = () => {
 </template>
 
 <style scoped>
+body {
+  background-color: #395244; /* Sets the background color of the entire page */
+  font-family: 'Roboto', sans-serif;
+}
+
 .container {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Roboto', sans-serif;
   max-width: 80vw;
   margin: 0 auto;
   padding: 20px;
-  /* background-color: #e0bfbf; */
+  background-color: #f6f0e7;
   border-radius: 10px;
+}
+
+button {
+  background-color: #395244;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #45a049;
 }
 </style>
