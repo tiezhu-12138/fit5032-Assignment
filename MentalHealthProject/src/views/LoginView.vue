@@ -1,6 +1,8 @@
 <script setup>
 import { ref } from 'vue'
 import { isAuthenticated } from '../router/index.js'
+import { isAdmin } from '../router/index.js'
+import { isSupport } from '../router/index.js'
 import { useRouter } from 'vue-router'
 
 const formData = ref({
@@ -28,11 +30,8 @@ const submitForm = () => {
   <div class="container mt-5">
     <div class="row">
       <div class="col-md-8 offset-md-2">
-        <h1 class="text-center">🗄️ W5. Library Login Form</h1>
-        <p class="text-center">
-          This form now allows users to log in to the library. Please enter your username and
-          password to proceed.
-        </p>
+        <h1 class="text-center">MINDBRIDGE</h1>
+        <p class="text-center">Please enter your username and password to proceed.</p>
         <form @submit.prevent="submitForm">
           <div class="row mb-3">
             <div class="col-md-6 col-sm-6 offset-3">
@@ -54,8 +53,10 @@ const submitForm = () => {
           </div>
 
           <div class="text-center">
-            <button type="submit" class="btn btn-primary me-2">LOGIN</button>
-            <!-- <button type="button" class="btn btn-secondary" @click="clearForm">Clear</button> -->
+            <button type="submit" class="btn btn-primary me-2 mb-2">Log in</button>
+            <p class="text-center">
+              Don't have an account? <router-link to="/register">Register</router-link>
+            </p>
           </div>
         </form>
       </div>
