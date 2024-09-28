@@ -43,7 +43,7 @@ const logout = () => {
         </li>
 
         <li class="nav-item">
-          <router-link to="/articles" class="nav-link" active-class="active">Articles</router-link>
+          <router-link to="/review" class="nav-link" active-class="active">Review</router-link>
         </li>
 
         <li class="nav-item" v-if="isAdmin || (isSupport && isAuthenticated)">
