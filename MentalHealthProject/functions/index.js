@@ -26,13 +26,13 @@ const cors = require('cors')({ origin: true })
 
 exports.addMoodEntry = functions.https.onRequest((req, res) => {
   cors(req, res, async () => {
-    // Your function code
+    // function code
   })
 })
 
 exports.getMoodEntries = functions.https.onRequest((req, res) => {
   cors(req, res, async () => {
-    // Your function code
+    // function code
   })
 })
 

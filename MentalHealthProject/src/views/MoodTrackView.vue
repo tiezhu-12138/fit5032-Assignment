@@ -46,8 +46,8 @@ import {
   LinearScale
 } from 'chart.js'
 import axios from 'axios'
-// import firebaseApp from 'firebase'
-// import { getAuth, onAuthStateChanged } from 'firebase/auth'
+import firebaseApp from 'firebase'
+import { getAuth, onAuthStateChanged } from 'firebase/auth'
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
