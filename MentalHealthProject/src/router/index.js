@@ -8,6 +8,11 @@ const role = ref('')
 
 const routes = [
   {
+    path: '/FBRegister',
+    name: 'FBRegister',
+    component: () => import('../views/FBRegisterView.vue')
+  },
+  {
     path: '/',
     name: 'home',
     component: () => import('../views/HomeView.vue')
