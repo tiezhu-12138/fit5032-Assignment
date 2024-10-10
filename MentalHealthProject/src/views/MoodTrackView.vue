@@ -27,9 +27,10 @@
     </div>
 
 <!-- Mood Chart -->
-    <div class="chart-container">
-      <Bar :chart-data="chartData" :options="chartOptions" />
-    </div>
+<div class="chart-container" v-if="chartData && chartData.labels && chartData.labels.length > 0" >
+  <Bar :data="chartData" :options="chartOptions" />
+</div>
+
   </div>
 
 </template>
@@ -44,13 +45,14 @@ import {
   Legend,
   BarElement,
   CategoryScale,
-  LinearScale
+  LinearScale,
+  registerables
 } from 'chart.js'
 import axios from 'axios'
 import { initializeApp } from 'firebase/app'
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
 
-ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
+ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ...registerables)
 
 const firebaseConfig = {
   apiKey: 'AIzaSyBLHD0QlApXB4u7elS5FH2vIayove07BXA',
@@ -128,43 +130,58 @@ const loadMoodEntries = async () => {
         userId: userId.value
       }
     })
-    // Convert Firestore timestamps to JS Date objects
-    moodEntries.value = response.data.map((entry) => ({
-      ...entry,
-      date: new Date(entry.date._seconds * 1000)
-    }))
+    console.log('Response data:', response.data)
+    moodEntries.value = response.data.map((entry) => {
+      // Check if 'date' exists and has '_seconds'
+      if (entry.date && entry.date._seconds) {
+        return {
+          ...entry,
+          date: new Date(entry.date._seconds * 1000)
+        }
+      } else {
+        console.warn('Invalid entry date:', entry)
+        return null // Exclude invalid entries
+      }
+    }).filter(entry => entry !== null)
   } catch (error) {
     console.error('Error loading mood entries:', error)
   }
 }
 
 const filteredMoodEntries = computed(() => {
+  const allEntries = moodEntries.value || []
   const now = new Date()
   let days = 7
   if (selectedPeriod.value === 'fortnight') days = 14
   else if (selectedPeriod.value === 'month') days = 30
 
-  return moodEntries.value.filter((entry) => {
+  return allEntries.filter((entry) => {
+    if (!entry.date) return false // Exclude entries without a date
     const diffTime = now - entry.date
     const diffDays = diffTime / (1000 * 60 * 60 * 24)
     return diffDays <= days
   })
 })
 
-const chartData = computed(() => {
-  const labels = filteredMoodEntries.value.map((entry) => entry.date.toLocaleDateString())
-  const data = filteredMoodEntries.value.map((entry) => entry.mood)
 
-  return {
+const chartData = computed(() => {
+  const entries = filteredMoodEntries.value || []
+  const labels = entries.map((entry) => entry.date.toLocaleDateString())
+  const dataPoints = entries.map((entry) => entry.mood)
+
+  const result = {
     labels: labels.reverse(), // Reverse to show chronological order
     datasets: [
       {
         label: 'Mood Score',
         backgroundColor: '#395244',
-        data: data.reverse()
+        data: dataPoints.reverse()
       }
     ]
   }
+
+  console.log('chartData:', result)
+  return result
 })
 
 const chartOptions = {
