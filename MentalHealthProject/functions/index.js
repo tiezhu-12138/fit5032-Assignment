@@ -24,18 +24,6 @@ const functions = require('firebase-functions')
 const admin = require('firebase-admin')
 const cors = require('cors')({ origin: true })
 
-exports.addMoodEntry = functions.https.onRequest((req, res) => {
-  cors(req, res, async () => {
-    // function code
-  })
-})
-
-exports.getMoodEntries = functions.https.onRequest((req, res) => {
-  cors(req, res, async () => {
-    // function code
-  })
-})
-
 admin.initializeApp()
 
 exports.addMoodEntry = functions.https.onRequest(async (req, res) => {

@@ -8,6 +8,11 @@ const role = ref('')
 
 const routes = [
   {
+    path: '/FBLogin',
+    name: 'FBLogin',
+    component: () => import('../views/FBLoginView.vue')
+  },
+  {
     path: '/FBRegister',
     name: 'FBRegister',
     component: () => import('../views/FBRegisterView.vue')
@@ -42,7 +47,7 @@ const routes = [
       if (isAdmin.value && isAuthenticated.value) {
         next()
       } else {
-        next({ name: 'login' })
+        next({ name: 'fblogin' })
       }
     }
   },
@@ -54,7 +59,7 @@ const routes = [
       if (isAdmin.value || (isSupport.value && isAuthenticated.value)) {
         next()
       } else {
-        next({ name: 'login' })
+        next({ name: 'fblogin' })
       }
     }
   },

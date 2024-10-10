@@ -104,7 +104,7 @@ const addMoodEntry = async () => {
     userId: userId.value
   }
   try {
-    await axios.post('https://us-central1-YOUR_PROJECT_ID.cloudfunctions.net/addMoodEntry', entry)
+    await axios.post('', entry)
     // Reload entries after adding new one
     await loadMoodEntries()
     // Reset form
@@ -125,14 +125,11 @@ const loadMoodEntries = async () => {
     return
   }
   try {
-    const response = await axios.get(
-      'https://us-central1-YOUR_PROJECT_ID.cloudfunctions.net/getMoodEntries',
-      {
-        params: {
-          userId: userId.value
-        }
+    const response = await axios.get('', {
+      params: {
+        userId: userId.value
       }
-    )
+    })
     // Convert Firestore timestamps to JS Date objects
     moodEntries.value = response.data.map((entry) => ({
       ...entry,

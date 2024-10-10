@@ -64,7 +64,10 @@ const logout = () => {
       </ul>
       <ul class="nav" style="order: 3; padding-right: 20px">
         <li class="nav-item" v-if="!isAuthenticated">
-          <router-link to="/login" class="btn btn-outline-light login-button" active-class="active"
+          <router-link
+            to="/fblogin"
+            class="btn btn-outline-light login-button"
+            active-class="active"
             >Log in</router-link
           >
         </li>
