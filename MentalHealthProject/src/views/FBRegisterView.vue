@@ -6,13 +6,13 @@ import { useRouter } from 'vue-router'
 import { ref } from 'vue'
 import { createUserWithEmailAndPassword } from 'firebase/auth'
 import { doc, setDoc } from 'firebase/firestore'
-import { auth, db } from '../firebase/init.js' // Adjust the path if necessary
+import { auth, db } from '../firebase/init.js'
 
 const router = useRouter()
 const userInfo = ref({
   email: '',
   password: '',
-  confirmPassword: ''
+  confirmPassword: '',
 })
 
 const errors = ref({
@@ -30,58 +30,124 @@ const clearForm = () => {
   errors.value.confirmPassword = null
 }
 
-const submitForm = () => {
+// const submitForm = () => {
+//   // Perform validation
+//   validateEmail(true)
+//   validatePassword(true)
+//   validateConfirmPassword(true)
+
+//   if (errors.value.email || errors.value.password || errors.value.confirmPassword) {
+//     alert('Please fix the errors before submitting.')
+//     return
+//   }
+
+//   const email = userInfo.value.email
+//   const password = userInfo.value.password
+
+//   console.log('Auth:', auth)
+//   console.log('Firestore DB:', db)
+
+//   createUserWithEmailAndPassword(auth, email, password)
+//     .then((userCredential) => {
+//       // User registered successfully
+//       const user = userCredential.user
+//       console.log('User registered:', user.uid)
+
+//       let userRole = 'user' // Default role
+//       if (email.toLowerCase().includes('admin')) {
+//         userRole = 'admin'
+//       } else if (email.toLowerCase().includes('support')) {
+//         userRole = 'support'
+//       }
+//       console.log('Assigned role:', userRole)
+
+//       // Save additional user info to Firestore
+//       setDoc(doc(db, 'users', user.uid), {
+//         email: email,
+//         role: userRole,
+//       })
+//         .then(() => {
+//           alert('Registration successful!')
+//           clearForm()
+//           router.push({ name: 'home' })
+//         })
+//         .catch((error) => {
+//           console.error('Error saving user data: ', error)
+//           alert('Error saving user data.')
+//         })
+//     })
+//     .catch((error) => {
+//       console.error('Registration error:', error)
+//       const errorCode = error.code
+//       const errorMessage = error.message
+//       if (errorCode === 'auth/email-already-in-use') {
+//         alert('Email already in use. Please try another one.')
+//         clearForm()
+//       } else {
+//         alert(errorMessage)
+//       }
+//     })
+// }
+const submitForm = async () => {
   // Perform validation
-  validateEmail(true)
-  validatePassword(true)
-  validateConfirmPassword(true)
+
+  console.log('Before validation');
+  validateEmail(true);
+  validatePassword(true);
+  validateConfirmPassword(true);
+  console.log('After validation');
 
   if (errors.value.email || errors.value.password || errors.value.confirmPassword) {
-    alert('Please fix the errors before submitting.')
-    return
+    console.log('Validation errors:', errors.value);
+    alert('Please fix the errors before submitting.');
+    return;
   }
 
-  const email = userInfo.value.email
-  const password = userInfo.value.password
+  console.log('Validation passed');
 
-  createUserWithEmailAndPassword(auth, email, password)
-    .then((userCredential) => {
-      // User registered successfully
-      const user = userCredential.user
+  const email = userInfo.value.email;
+  const password = userInfo.value.password;
 
-      let userRole = 'user' // Default role
-      if (email.toLowerCase().includes('admin')) {
-        userRole = 'admin'
-      } else if (email.toLowerCase().includes('support')) {
-        userRole = 'support'
-      }
+  console.log('Attempting to create user with email:', email);
 
-      // Save additional user info to Firestore
-      setDoc(doc(db, 'users', user.uid), {
-        email: email,
-        role: userRole
-      })
-        .then(() => {
-          alert('Registration successful!')
-          clearForm()
-          router.push({ name: 'home' })
-        })
-        .catch((error) => {
-          console.error('Error saving user data: ', error)
-          alert('Error saving user data.')
-        })
-    })
-    .catch((error) => {
-      const errorCode = error.code
-      const errorMessage = error.message
-      if (errorCode === 'auth/email-already-in-use') {
-        alert('Email already in use. Please try another one.')
-        clearForm()
-      } else {
-        alert(errorMessage)
-      }
-    })
-}
+  try {
+    // Create user with Firebase Auth
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    console.log('User registered:', user.uid);
+
+    // Determine user role
+    let userRole = 'user'; // Default role
+    if (email.toLowerCase().includes('admin')) {
+      userRole = 'admin';
+    } else if (email.toLowerCase().includes('support')) {
+      userRole = 'support';
+    }
+    console.log('Assigned role:', userRole);
+
+    // Save additional user info to Firestore
+    await setDoc(doc(db, 'users', user.uid), {
+      email: email,
+      role: userRole,
+    });
+
+    alert('Registration successful!');
+    clearForm();
+    router.push({ name: 'home' });
+  } catch (error) {
+    console.error('Registration error:', error);
+    const errorCode = error.code;
+    const errorMessage = error.message;
+
+    if (errorCode === 'auth/email-already-in-use') {
+      alert('Email already in use. Please try another one.');
+      clearForm();
+    } else {
+      alert('Registration error: ' + errorMessage);
+    }
+  }
+};
+
 
 const validateEmail = (blur) => {
   const email = userInfo.value.email

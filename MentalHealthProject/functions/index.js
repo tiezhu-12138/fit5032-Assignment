@@ -58,6 +58,7 @@ exports.getMoodEntries = onRequest(async (req, res) => {
       // Verify the ID token
       const decodedToken = await admin.auth().verifyIdToken(idToken);
       const userId = decodedToken.uid;
+      console.log("Decoded userId:", userId);
 
       const snapshot = await db
           .collection("users")
@@ -78,3 +79,4 @@ exports.getMoodEntries = onRequest(async (req, res) => {
     }
   });
 });
+

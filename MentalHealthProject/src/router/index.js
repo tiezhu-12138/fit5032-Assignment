@@ -1,10 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { ref } from 'vue'
 
-const isAuthenticated = ref(false)
-const isAdmin = ref(false)
-const isSupport = ref(false)
-const role = ref('')
+import { isAuthenticated, isAdmin, isSupport, role } from '../firebase/auth'
+
+console.log('User authenticated:', isAuthenticated.value);
+console.log('User role:', role.value);
 
 const routes = [
   {

@@ -5,11 +5,9 @@ import { signInWithEmailAndPassword } from 'firebase/auth'
 import { doc, getDoc } from 'firebase/firestore'
 import { auth, db } from '../firebase/init.js' // Adjust the path if necessary
 
-// Reactive variables for authentication state and roles
-import { isAuthenticated } from '../router/index.js'
-import { isAdmin } from '../router/index.js'
-import { isSupport } from '../router/index.js'
-import { role } from '../router/index.js'
+// Import reactive variables from auth.js
+import { isAuthenticated, isAdmin, isSupport, role } from '../firebase/auth'
+
 
 const router = useRouter()
 const sanitizeInput = (input) => input.replace(/<script.*?>.*?<\/script>/gi, '') // Basic XSS prevention
@@ -37,12 +35,9 @@ const submitForm = async () => {
       role.value = userData.role
 
       // Set authentication and role flags
-      isAuthenticated.value = true
-      if (role.value === 'admin') {
-        isAdmin.value = true
-      } else if (role.value === 'support') {
-        isSupport.value = true
-      }
+      isAuthenticated.value = true;
+      isAdmin.value = role.value === 'admin';
+      isSupport.value = role.value === 'support';
 
       alert('Login successful!')
       router.push({ name: 'home' })
@@ -61,6 +56,8 @@ const submitForm = async () => {
     }
   }
 }
+
+
 </script>
 
 <template>
@@ -99,6 +96,8 @@ const submitForm = async () => {
       </div>
     </div>
   </div>
+
+  
 </template>
 
 <style scoped>
