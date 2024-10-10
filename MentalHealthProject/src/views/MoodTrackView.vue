@@ -95,25 +95,34 @@ const selectedPeriod = ref('week')
 
 const addMoodEntry = async () => {
   if (!userId.value) {
-    console.error('User not authenticated')
-    return
+    console.error('User not authenticated');
+    return;
   }
+
+  const auth = getAuth();
+  const idToken = await auth.currentUser.getIdToken();
+
   const entry = {
     mood: newMood.value.mood,
     notes: newMood.value.notes,
-    userId: userId.value
-  }
+  };
+
   try {
-    await axios.post('https://addmoodentry-zhlxrzxjda-uc.a.run.app', entry)
+    await axios.post('https://addmoodentry-zhlxrzxjda-uc.a.run.app', entry, {
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+      },
+    });
     // Reload entries after adding new one
-    await loadMoodEntries()
+    await loadMoodEntries();
     // Reset form
-    newMood.value.mood = null
-    newMood.value.notes = ''
+    newMood.value.mood = null;
+    newMood.value.notes = '';
   } catch (error) {
-    console.error('Error adding mood entry:', error)
+    console.error('Error adding mood entry:', error);
   }
-}
+};
+
 
 const selectPeriod = (period) => {
   selectedPeriod.value = period
@@ -121,32 +130,30 @@ const selectPeriod = (period) => {
 
 const loadMoodEntries = async () => {
   if (!userId.value) {
-    console.error('User not authenticated')
-    return
+    console.error('User not authenticated');
+    return;
   }
+
+  const auth = getAuth();
+  const idToken = await auth.currentUser.getIdToken();
+
   try {
-    const response = await axios.get('https://getmoodentries-zhlxrzxjda-uc.a.run.app', {
-      params: {
-        userId: userId.value
+    const response = await axios.get(
+      'https://getmoodentries-zhlxrzxjda-uc.a.run.app',
+      {
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
       }
-    })
-    console.log('Response data:', response.data)
-    moodEntries.value = response.data.map((entry) => {
-      // Check if 'date' exists and has '_seconds'
-      if (entry.date && entry.date._seconds) {
-        return {
-          ...entry,
-          date: new Date(entry.date._seconds * 1000)
-        }
-      } else {
-        console.warn('Invalid entry date:', entry)
-        return null // Exclude invalid entries
-      }
-    }).filter(entry => entry !== null)
+    );
+    moodEntries.value = response.data.map((entry) => ({
+      ...entry,
+      date: new Date(entry.date),
+    }));
   } catch (error) {
-    console.error('Error loading mood entries:', error)
+    console.error('Error loading mood entries:', error);
   }
-}
+};
 
 const filteredMoodEntries = computed(() => {
   const allEntries = moodEntries.value || []
