@@ -26,11 +26,12 @@
       </button>
     </div>
 
-    <!-- Mood Chart -->
+<!-- Mood Chart -->
     <div class="chart-container">
-      <BarChart :chart-data="chartData" :options="chartOptions" />
+      <Bar :chart-data="chartData" :options="chartOptions" />
     </div>
   </div>
+
 </template>
 
 <script setup>
@@ -46,26 +47,23 @@ import {
   LinearScale
 } from 'chart.js'
 import axios from 'axios'
-import firebaseApp from 'firebase'
+import { initializeApp } from 'firebase/app'
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
-// Define the BarChart component
-const BarChart = {
-  extends: Bar,
-  props: ['chartData', 'options'],
-  mounted() {
-    this.renderChart(this.chartData, this.options)
-  },
-  watch: {
-    chartData(newData) {
-      this.renderChart(newData, this.options)
-    }
-  }
+const firebaseConfig = {
+  apiKey: 'AIzaSyBLHD0QlApXB4u7elS5FH2vIayove07BXA',
+  authDomain: 'fit5032project-a3ac5.firebaseapp.com',
+  projectId: 'fit5032project-a3ac5',
+  storageBucket: 'fit5032project-a3ac5.appspot.com',
+  messagingSenderId: '661781321631',
+  appId: '1:661781321631:web:7cb300fe83bc693b2f0faa',
+  measurementId: 'G-GF9YS45Y69'
 }
 
-const auth = getAuth(firebaseApp)
+const app = initializeApp(firebaseConfig)
+const auth = getAuth(app)
 const userId = ref(null)
 
 onAuthStateChanged(auth, (user) => {
@@ -104,7 +102,7 @@ const addMoodEntry = async () => {
     userId: userId.value
   }
   try {
-    await axios.post('', entry)
+    await axios.post('https://addmoodentry-zhlxrzxjda-uc.a.run.app', entry)
     // Reload entries after adding new one
     await loadMoodEntries()
     // Reset form
@@ -125,7 +123,7 @@ const loadMoodEntries = async () => {
     return
   }
   try {
-    const response = await axios.get('', {
+    const response = await axios.get('https://getmoodentries-zhlxrzxjda-uc.a.run.app', {
       params: {
         userId: userId.value
       }
