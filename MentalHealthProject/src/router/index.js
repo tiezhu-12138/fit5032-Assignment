@@ -105,7 +105,7 @@ const router = createRouter({
 })
 
 export default router
-export { isAuthenticated }
-export { isAdmin }
-export { isSupport }
-export { role }
+// export { isAuthenticated }
+// export { isAdmin }
+// export { isSupport }
+// export { role }
