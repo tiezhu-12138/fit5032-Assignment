@@ -1,7 +1,5 @@
 <script setup>
-import { isAuthenticated } from '../router/index.js'
-import { isAdmin } from '../router/index.js'
-import { isSupport } from '../router/index.js'
+import { isAuthenticated, isAdmin, isSupport } from '../firebase/auth'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()

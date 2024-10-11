@@ -89,7 +89,7 @@ const submitForm = async () => {
           <div class="text-center">
             <button type="submit" class="btn btn-primary me-2 mb-2">Log in</button>
             <p class="text-center">
-              Don't have an account? <router-link to="/register">Register</router-link>
+              Don't have an account? <router-link to="/FBregister">Register</router-link>
             </p>
           </div>
         </form>

@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-
 import { isAuthenticated, isAdmin, isSupport, role } from '../firebase/auth'
 
 console.log('User authenticated:', isAuthenticated.value);
@@ -30,7 +29,7 @@ const routes = [
     path: '/account',
     name: 'account',
     component: () => import('../views/AccountView.vue'),
-    beforenter: (to, from, next) => {
+    beforEnter: (to, from, next) => {
       if (isAuthenticated.value) {
         next()
       } else {
@@ -42,11 +41,11 @@ const routes = [
     path: '/admin',
     name: 'admin',
     component: () => import('../views/AdminView.vue'),
-    beforenter: (to, from, next) => {
+    beforEnter: (to, from, next) => {
       if (isAdmin.value && isAuthenticated.value) {
         next()
       } else {
-        next({ name: 'fblogin' })
+        next({ name: 'FBlogin' })
       }
     }
   },
@@ -54,11 +53,11 @@ const routes = [
     path: '/appointment',
     name: 'appointment',
     component: () => import('../views/AppointmentView.vue'),
-    beforenter: (to, from, next) => {
+    beforEnter: (to, from, next) => {
       if (isAdmin.value || (isSupport.value && isAuthenticated.value)) {
         next()
       } else {
-        next({ name: 'fblogin' })
+        next({ name: 'FBlogin' })
       }
     }
   },
