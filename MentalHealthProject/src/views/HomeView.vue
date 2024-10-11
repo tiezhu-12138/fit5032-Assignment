@@ -3,8 +3,7 @@ import { ref } from 'vue'
 import OpenAI from "openai";
 
 const openai = new OpenAI({
-  organization: "org-0y9o1Dn5ppYIGH2M6qnFZz13",
-  project: "proj-0y9o1Dn5ppYIGH2M6qnFZz13",
+
 });
 
 const chatInput = ref('');
