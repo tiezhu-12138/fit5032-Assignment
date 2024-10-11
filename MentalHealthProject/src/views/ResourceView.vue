@@ -49,7 +49,7 @@ function loadGoogleMapsAPI() {
       return
     }
     const script = document.createElement('script')
-    script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places`
+    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDIY9LbR8qmen4CGpzr533iH3ZHr22bNyw&libraries=places`
     script.async = true
     script.defer = true
     script.onload = () => {

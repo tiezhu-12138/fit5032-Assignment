@@ -66,21 +66,21 @@ const routes = [
     name: 'articles',
     component: () => import('../views/ReviewView.vue')
   },
-  {
-    path: '/login',
-    name: 'login',
-    component: () => import('../views/LoginView.vue')
-  },
+  // {
+  //   path: '/login',
+  //   name: 'login',
+  //   component: () => import('../views/LoginView.vue')
+  // },
   {
     path: '/moodtrack',
     name: 'moodtrack',
     component: () => import('../views/MoodTrackView.vue')
   },
-  {
-    path: '/register',
-    name: 'register',
-    component: () => import('../views/RegisterView.vue')
-  },
+  // {
+  //   path: '/register',
+  //   name: 'register',
+  //   component: () => import('../views/DiscardedViews/RegisterView.vue')
+  // },
   {
     path: '/resource',
     name: 'resource',
