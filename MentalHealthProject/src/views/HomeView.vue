@@ -1,37 +1,40 @@
 <script setup>
 import { ref } from 'vue'
-import OpenAI from "openai";
 
-const openai = new OpenAI({
-
-});
-
-const chatInput = ref('');
-const chatMessages = ref([]);
+const chatInput = ref('')
+const chatMessages = ref([])
 
 // Function to send message to ChatGPT API
 const sendMessage = async () => {
-  const userMessage = chatInput.value.trim();
-  if (!userMessage) return;
+  const userMessage = chatInput.value.trim()
+  if (!userMessage) return
 
-  chatMessages.value.push({ sender: 'User', text: userMessage });
-  chatInput.value = '';
+  chatMessages.value.push({ sender: 'User', text: userMessage })
+  chatInput.value = ''
 
   try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        { role: "system", content: "You are a helpful assistant." },
-        { role: "user", content: userMessage }
-      ]
-    });
-
-    const botMessage = response.choices[0].message.content;
-    chatMessages.value.push({ sender: 'ChatGPT', text: botMessage });
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer YOUR_API_KEY` // Replace with your OpenAI API key
+      },
+      body: JSON.stringify({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          { role: 'system', content: 'You are a helpful assistant.' },
+          { role: 'user', content: userMessage }
+        ]
+      })
+    })
+    
+    const data = await response.json()
+    const botMessage = data.choices[0].message.content
+    chatMessages.value.push({ sender: 'ChatGPT', text: botMessage })
   } catch (error) {
-    chatMessages.value.push({ sender: 'Error', text: 'Failed to fetch response from ChatGPT.' });
+    chatMessages.value.push({ sender: 'Error', text: 'Failed to fetch response from ChatGPT.' })
   }
-};
+}
 </script>
 
 <template>
