@@ -1,9 +1,9 @@
 <script setup>
 import { ref } from 'vue'
-import { isAuthenticated } from '../router/index.js'
-import { isAdmin } from '../router/index.js'
-import { isSupport } from '../router/index.js'
-import { role } from '../router/index.js'
+import { isAuthenticated } from '../../router/index.js'
+import { isAdmin } from '../../router/index.js'
+import { isSupport } from '../../router/index.js'
+import { role } from '../../router/index.js'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()

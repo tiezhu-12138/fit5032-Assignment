@@ -1,4 +1,17 @@
 <template>
+  <!-- Weather Display -->
+  <div v-if="weatherData" class="weather-container">
+    <h2>
+      {{ weatherData.name }}, {{ weatherData.sys.country }}
+    </h2>
+    <div>
+      <img :src="iconUrl" alt="Weather Icon" />
+      <p>{{ temperature }} °C</p>
+    </div>
+    <span>{{ weatherData.weather[0].description }}</span>
+  </div>
+
+  <!-- Existing Template Content -->
   <div class="container">
     <div class="map-container">
       <div ref="mapRef" class="map"></div>
@@ -6,15 +19,27 @@
     <div class="controls">
       <button @click="getCurrentLocation" class="action-button">Find Therapists Near Me</button>
       <div class="therapist-list">
-        <div
-          v-for="(therapist, index) in therapists"
-          :key="index"
-          :class="['therapist-item', { selected: selectedTherapist === therapist }]"
-          @click="selectTherapist(therapist)"
-        >
-          <h3 class="therapist-name">{{ therapist.name }}</h3>
-          <p>{{ therapist.vicinity }}</p>
-        </div>
+        <table class="therapist-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Address</th>
+              <!-- Add more columns as needed -->
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="(therapist, index) in therapists"
+              :key="index"
+              :class="{ selected: selectedTherapist === therapist }"
+              @click="selectTherapist(therapist)"
+            >
+              <td>{{ therapist.name }}</td>
+              <td>{{ therapist.vicinity }}</td>
+              <!-- Add more cells as needed -->
+            </tr>
+          </tbody>
+        </table>
       </div>
       <button v-if="selectedTherapist" @click="getDirections" class="action-button">
         Get Directions to {{ selectedTherapist.name }}
@@ -24,7 +49,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import axios from 'axios'
 
 const mapRef = ref(null)
 const map = ref(null)
@@ -33,10 +59,48 @@ const therapists = ref([])
 const selectedTherapist = ref(null)
 const directionsRenderer = ref(null)
 
+// Weather Data
+const weatherData = ref(null)
+const temperature = computed(() => {
+  return weatherData.value ? Math.round(weatherData.value.main.temp) : null
+})
+const iconUrl = computed(() => {
+  return weatherData.value ? `http://openweathermap.org/img/w/${weatherData.value.weather[0].icon}.png` : null
+})
+
+const fetchWeatherData = async (latitude, longitude) => {
+  const apikey = '267173141f90afa263fcc6fd1a23cdc2' 
+  try {
+    const url = `http://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apikey}&units=metric`
+    const response = await axios.get(url)
+    weatherData.value = response.data
+  } catch (error) {
+    console.error('Error fetching weather data:', error)
+  }
+}
+
 onMounted(async () => {
   try {
     await loadGoogleMapsAPI()
     initMap()
+    // Get current location
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const pos = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          }
+          currentLocation.value = pos
+          fetchWeatherData(position.coords.latitude, position.coords.longitude)
+        },
+        (error) => {
+          console.error('Error getting current location:', error)
+        }
+      )
+    } else {
+      console.error("Error: Your browser doesn't support geolocation.")
+    }
   } catch (error) {
     console.error('Error loading Google Maps:', error)
   }
@@ -49,7 +113,7 @@ function loadGoogleMapsAPI() {
       return
     }
     const script = document.createElement('script')
-    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDIY9LbR8qmen4CGpzr533iH3ZHr22bNyw&libraries=places`
+    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDIY9LbR8qmen4CGpzr533iH3ZHr22bNyw&libraries=places` 
     script.async = true
     script.defer = true
     script.onload = () => {
@@ -87,7 +151,23 @@ const initMap = () => {
 }
 
 const getCurrentLocation = () => {
-  if (navigator.geolocation) {
+  if (currentLocation.value) {
+    // Use existing current location
+    map.value.setCenter(currentLocation.value)
+    new google.maps.Marker({
+      position: currentLocation.value,
+      map: map.value,
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 10,
+        fillColor: '#395244',
+        fillOpacity: 1,
+        strokeWeight: 2,
+        strokeColor: '#F6F0E7'
+      }
+    })
+    searchNearbyTherapists(currentLocation.value)
+  } else if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const pos = {
@@ -172,10 +252,20 @@ const getDirections = () => {
 </script>
 
 <style scoped>
-/* Set the background color to cover the entire viewport */
-body {
+/* Ensure html and body elements cover the full height */
+html, body {
   margin: 0;
+  padding: 0;
+  height: 100%;
   background-color: #f6f0e7;
+}
+
+/* Weather Container styles */
+.weather-container {
+  padding: 16px;
+  background-color: #f6f0e7;
+  color: #395244;
+  text-align: center;
 }
 
 /* Container styles */
@@ -187,9 +277,8 @@ body {
 }
 
 /* Map styles */
-/* Shrink the map size */
 .map-container {
-  height: 50vh; /* Adjust the height as desired */
+  height: 50vh;
   position: relative;
 }
 
@@ -200,10 +289,11 @@ body {
 
 /* Controls styles */
 .controls {
-  padding: 16px; /* Equivalent to Tailwind 'p-4' */
+  padding: 16px;
   background-color: #395244;
   color: #f6f0e7;
-  flex: 1; /* Make controls fill the remaining vertical space */
+  flex: 1;
+  overflow-x: hidden; /* Hide overflow on X-axis to prevent horizontal scroll on the controls container */
 }
 
 /* Buttons styles */
@@ -211,9 +301,9 @@ body {
   width: 100%;
   background-color: #f6f0e7;
   color: #395244;
-  padding: 8px 16px; /* Equivalent to Tailwind 'py-2 px-4' */
-  border-radius: 4px; /* Equivalent to Tailwind 'rounded' */
-  margin-bottom: 16px; /* Equivalent to Tailwind 'mb-4' */
+  padding: 8px 16px;
+  border-radius: 4px;
+  margin-bottom: 16px;
   cursor: pointer;
   border: none;
 }
@@ -224,32 +314,29 @@ body {
 
 /* Therapist list styles */
 .therapist-list {
-  max-height: 160px; /* Equivalent to Tailwind 'max-h-40' */
-  overflow-y: auto;
-  margin-bottom: 16px; /* Equivalent to Tailwind 'mb-4' */
+  overflow-x: auto; /* Allow horizontal scrolling */
+  margin-bottom: 16px;
 }
 
-/* Therapist item styles */
-.therapist-item {
-  margin-bottom: 8px; /* Equivalent to Tailwind 'mb-2' */
-  padding: 8px; /* Equivalent to Tailwind 'p-2' */
-  cursor: pointer;
-  border-radius: 4px; /* Equivalent to Tailwind 'rounded' */
+.therapist-table {
+  width: 120%; /* Set table width greater than 100% */
+  border-collapse: collapse;
+}
+
+.therapist-table th, .therapist-table td {
+  border: 1px solid #ccc;
+  padding: 8px;
   color: inherit;
-  background-color: transparent;
 }
 
-.therapist-item:hover {
-  background-color: rgba(246, 240, 231, 0.1); /* Light hover effect */
-}
-
-.therapist-item.selected {
+.therapist-table th {
   background-color: #f6f0e7;
   color: #395244;
 }
 
-/* Therapist name styles */
-.therapist-name {
-  font-weight: bold;
+.selected {
+  background-color: #f6f0e7;
+  color: #395244;
 }
+
 </style>

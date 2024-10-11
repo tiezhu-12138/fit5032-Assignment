@@ -23,7 +23,7 @@ const routes = [
   {
     path: '/about',
     name: 'about',
-    component: () => import('../views/AboutView.vue')
+    component: () => import('../views/DiscardedViews/AboutView.vue')
   },
   {
     path: '/account',
