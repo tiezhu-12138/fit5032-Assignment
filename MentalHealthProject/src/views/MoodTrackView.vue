@@ -26,13 +26,14 @@
       </button>
     </div>
 
-<!-- Mood Chart -->
-<div class="chart-container" v-if="chartData && chartData.labels && chartData.labels.length > 0" >
-  <Bar :data="chartData" :options="chartOptions" />
-</div>
+    <!-- Mood Chart -->
+    <div class="chart-container" v-if="chartData && chartData.labels && chartData.labels.length > 0">
+      <Bar ref="moodChart" :data="chartData" :options="chartOptions" />
+    </div>
 
+    <!-- Export Button -->
+    <button class="export-button" @click="exportChartToPDF">Export as PDF</button>
   </div>
-
 </template>
 
 <script setup>
@@ -49,6 +50,8 @@ import {
   registerables
 } from 'chart.js'
 import axios from 'axios'
+import html2canvas from 'html2canvas'
+import jsPDF from 'jspdf'
 import { initializeApp } from 'firebase/app'
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
 
@@ -73,7 +76,6 @@ onAuthStateChanged(auth, (user) => {
     userId.value = user.uid
     loadMoodEntries()
   } else {
-    // Handle user not logged in
     console.error('User not authenticated')
   }
 })
@@ -113,16 +115,13 @@ const addMoodEntry = async () => {
         Authorization: `Bearer ${idToken}`,
       },
     });
-    // Reload entries after adding new one
     await loadMoodEntries();
-    // Reset form
     newMood.value.mood = null;
     newMood.value.notes = '';
   } catch (error) {
     console.error('Error adding mood entry:', error);
   }
 };
-
 
 const selectPeriod = (period) => {
   selectedPeriod.value = period
@@ -163,13 +162,12 @@ const filteredMoodEntries = computed(() => {
   else if (selectedPeriod.value === 'month') days = 30
 
   return allEntries.filter((entry) => {
-    if (!entry.date) return false // Exclude entries without a date
+    if (!entry.date) return false
     const diffTime = now - entry.date
     const diffDays = diffTime / (1000 * 60 * 60 * 24)
     return diffDays <= days
   })
 })
-
 
 const chartData = computed(() => {
   const entries = filteredMoodEntries.value || []
@@ -177,7 +175,7 @@ const chartData = computed(() => {
   const dataPoints = entries.map((entry) => entry.mood)
 
   const result = {
-    labels: labels.reverse(), // Reverse to show chronological order
+    labels: labels.reverse(),
     datasets: [
       {
         label: 'Mood Score',
@@ -187,7 +185,6 @@ const chartData = computed(() => {
     ]
   }
 
-  console.log('chartData:', result)
   return result
 })
 
@@ -201,6 +198,27 @@ const chartOptions = {
       ticks: {
         stepSize: 1
       }
+    }
+  }
+}
+
+// Function to export chart to PDF
+const exportChartToPDF = async () => {
+  const chartElement = document.querySelector('.chart-container')
+
+  if (chartElement) {
+    try {
+      const canvas = await html2canvas(chartElement)
+      const imgData = canvas.toDataURL('image/png')
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'pt',
+        format: [canvas.width, canvas.height]
+      })
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height)
+      pdf.save('mood_chart.pdf')
+    } catch (error) {
+      console.error('Error exporting chart to PDF:', error)
     }
   }
 }
@@ -289,5 +307,20 @@ const chartOptions = {
 .chart-container {
   position: relative;
   height: 300px;
+}
+
+/* Export button styles */
+.export-button {
+  margin-top: 20px;
+  background-color: #395244;
+  color: #f6f0e7;
+  padding: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: none;
+}
+
+.export-button:hover {
+  background-color: #2e4236;
 }
 </style>
