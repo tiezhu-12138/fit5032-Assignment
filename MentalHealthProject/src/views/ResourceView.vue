@@ -11,7 +11,7 @@
     <span>{{ weatherData.weather[0].description }}</span>
   </div>
 
-  <!-- Existing Template Content -->
+ 
   <div class="container">
     <div class="map-container">
       <div ref="mapRef" class="map"></div>
@@ -69,7 +69,7 @@ const iconUrl = computed(() => {
 })
 
 const fetchWeatherData = async (latitude, longitude) => {
-  const apikey = '267173141f90afa263fcc6fd1a23cdc2' 
+  const apikey = 'import.meta.env.VITE_OPENWEATHER_API_KEY' 
   try {
     const url = `http://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apikey}&units=metric`
     const response = await axios.get(url)
@@ -113,7 +113,8 @@ function loadGoogleMapsAPI() {
       return
     }
     const script = document.createElement('script')
-    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDIY9LbR8qmen4CGpzr533iH3ZHr22bNyw&libraries=places` 
+    const googleMapAPI = 'import.meta.env.VITE_GOOGLE_MAPS_API_KEY'
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${googleMapAPI}&libraries=places` 
     script.async = true
     script.defer = true
     script.onload = () => {

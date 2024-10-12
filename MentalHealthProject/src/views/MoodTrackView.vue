@@ -58,7 +58,7 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth'
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ...registerables)
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyBLHD0QlApXB4u7elS5FH2vIayove07BXA',
+  apiKey: 'import.meta.env.VITE_FIREBASE_API_KEY',
   authDomain: 'fit5032project-a3ac5.firebaseapp.com',
   projectId: 'fit5032project-a3ac5',
   storageBucket: 'fit5032project-a3ac5.appspot.com',
