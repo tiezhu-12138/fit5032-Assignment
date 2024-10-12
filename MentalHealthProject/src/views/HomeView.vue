@@ -7,35 +7,44 @@
       </h1>
     </div>
 
-    <!-- Lower part with ChatGPT integration and background color #F6F0E7 -->
+    <!-- Lower part with ChatGPT integration, slogan, and background color #F6F0E7 -->
     <div class="lower-section">
-      <div class="messages">
-        <div
-          v-for="(message, index) in chatMessages"
-          :key="index"
-          :class="['message', message.sender.toLowerCase()]"
-        >
-          <strong>{{ message.sender }}:</strong> {{ message.text }}
-        </div>
+      <!-- Slogan in the center of the lower half -->
+      <div class="slogan">
+        <h2>Need someone to talk to? We're here for you.</h2>
+        <p>Your well-being matters. Start a conversation now.</p>
       </div>
 
-      <div class="input-area">
-        <input
-          v-model="chatInput"
-          type="text"
-          placeholder="Type your message..."
-          class="chat-input"
-          @keyup.enter="sendMessage"
-        />
+      <!-- Chat box at the bottom center -->
+      <div class="chat-area">
+        <div class="messages">
+          <div
+            v-for="(message, index) in chatMessages"
+            :key="index"
+            :class="['message', message.sender.toLowerCase()]"
+          >
+            <strong>{{ message.sender }}:</strong> {{ message.text }}
+          </div>
+        </div>
 
-        <button
-          @click="sendMessage"
-          class="send-button"
-          @mouseover="handleMouseOver($event)"
-          @mouseout="handleMouseOut($event)"
-        >
-          Send
-        </button>
+        <div class="input-area">
+          <input
+            v-model="chatInput"
+            type="text"
+            placeholder="Type your message..."
+            class="chat-input"
+            @keyup.enter="sendMessage"
+          />
+
+          <button
+            @click="sendMessage"
+            class="send-button"
+            @mouseover="handleMouseOver($event)"
+            @mouseout="handleMouseOut($event)"
+          >
+            Send
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -77,7 +86,7 @@ const sendMessage = async (event) => {
 
   try {
     // Make API call to OpenAI ChatGPT
-    const openai = new OpenAI({ apiKey: import.meta.env.VITE_CHATGPT_API_KEY, dangerouslyAllowBrowser: true  });
+    const openai = new OpenAI({ apiKey: import.meta.env.VITE_CHATGPT_API_KEY, dangerouslyAllowBrowser: true });
     const response = await fetch('https://api.openai.com/v1/assistants', {
       method: 'POST',
       headers: {
@@ -88,10 +97,6 @@ const sendMessage = async (event) => {
       },
       body: JSON.stringify({
         model: "gpt-4", // You can switch to 'gpt-4' if you have access
-        // messages: [
-        //   { role: 'system', content: 'You are a helpful assistant.' },
-        //   { role: 'user', content: userMessage }
-        // ],
       })
     })
 
@@ -139,12 +144,46 @@ const sendMessage = async (event) => {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  position: relative;
+}
+
+.slogan {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.slogan h2 {
+  font-size: 1.5em;
+  color: #395244;
+}
+
+.slogan p {
+  font-size: 1.2em;
+  color: #395244;
+}
+
+.chat-area {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  padding: 0 20px;
 }
 
 .messages {
+  width: 100%;
   overflow-y: auto;
-  flex-grow: 1;
+  max-height: 200px;
   margin-bottom: 20px;
+  border-radius: 15px;
+  background-color: #fff;
+  padding: 10px;
+  border: 1px solid #395244;
 }
 
 .message {
@@ -166,6 +205,7 @@ const sendMessage = async (event) => {
 .input-area {
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
 .chat-input {

@@ -3,7 +3,7 @@
     <!-- Mood Entry Form -->
     <div class="mood-entry">
       <h2>Record Your Mood</h2>
-      <form @submit.prevent="addMoodEntry">
+      <form @submit.prevent="submitMoodEntry">
         <label for="mood">Mood (1-10):</label>
         <input
           type="number"
@@ -62,7 +62,7 @@ import {
 import axios from 'axios';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, signInAnonymously, getAuth } from 'firebase/auth';
 import { auth } from '../firebase/init.js';
 
 ChartJS.register(
@@ -75,93 +75,103 @@ ChartJS.register(
   ...registerables
 );
 
-const userId = ref(null);
-
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    userId.value = user.uid;
-    loadMoodEntries();
-  } else {
-    console.error('User not authenticated');
-  }
-});
-
+const userID = ref(null);
 const newMood = ref({
   mood: null,
   notes: '',
 });
-
 const moodEntries = ref([]);
-
 const periods = [
   { label: '1 Week', value: 'week' },
   { label: 'Fortnight', value: 'fortnight' },
   { label: 'Month', value: 'month' },
 ];
-
 const selectedPeriod = ref('week');
 
-// When adding a mood entry
-const addMoodEntry = async () => {
-  if (!userId.value) {
+const fetchMoodEntries = async () => {
+  if (!userID.value) {
     console.error('User not authenticated');
     return;
   }
-
-  const auth = getAuth();
-  const idToken = await auth.currentUser.getIdToken();
-
-  // Prepare the data to match the Cloud Function's expectations
-  const entry = {
-    mood: newMood.value.mood, // Should be a number
-    notes: newMood.value.notes, // Should be a string
-  };
-
-  try {
-    await axios.post('https://addmoodentry-zhlxrzxjda-uc.a.run.app', entry, {
-      headers: {
-        Authorization: `Bearer ${idToken}`,
-        'Content-Type': 'application/json',
-      },
-    });
-    await loadMoodEntries();
-    newMood.value.mood = null;
-    newMood.value.notes = '';
-  } catch (error) {
-    console.error('Error adding mood entry:', error);
-  }
-};
-
-
-const selectPeriod = (period) => {
-  selectedPeriod.value = period;
-};
-
-const loadMoodEntries = async () => {
-  if (!userId.value) {
-    console.error('User not authenticated');
-    return;
-  }
-
-  const auth = getAuth();
-  const idToken = await auth.currentUser.getIdToken();
 
   try {
     const response = await axios.get(
       'https://getmoodentries-zhlxrzxjda-uc.a.run.app',
       {
+        params: {
+          userID: userID.value,
+        },
         headers: {
-          Authorization: `Bearer ${idToken}`,
+          Authorization: `Bearer ${await auth.currentUser.getIdToken()}`,
         },
       }
     );
-    moodEntries.value = response.data.map((entry) => ({
+    moodEntries.value = response.data.moodEntries.map((entry, index) => ({
       ...entry,
       date: new Date(entry.date),
     }));
   } catch (error) {
-    console.error('Error loading mood entries:', error);
+    console.error('Error fetching mood entries:', error);
+    alert('Error fetching mood entries: ' + error.message);
   }
+};
+
+const submitMoodEntry = async () => {
+  if (newMood.value.mood == null || !userID.value) {
+    alert('Please provide a valid mood and ensure you are logged in.');
+    return;
+  }
+
+  const moodData = {
+    userID: userID.value,
+    mood: newMood.value.mood,
+    notes: newMood.value.notes || '',
+  };
+
+  try {
+    const response = await axios.post(
+      'https://addmoodentry-zhlxrzxjda-uc.a.run.app',
+      moodData,
+      {
+        headers: {
+          Authorization: `Bearer ${await auth.currentUser.getIdToken()}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    if (response.data.success) {
+      fetchMoodEntries();
+      newMood.value.mood = null;
+      newMood.value.notes = '';
+      alert('Mood entry added successfully!');
+    } else {
+      alert('Error adding mood entry: ' + response.data.error);
+    }
+  } catch (error) {
+    console.error('Error submitting mood entry:', error);
+    alert('Error submitting mood entry: ' + error.message);
+  }
+};
+
+onMounted(() => {
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      userID.value = user.uid;
+      fetchMoodEntries();
+    } else {
+      signInAnonymously(auth).then((userCredential) => {
+        userID.value = userCredential.user.uid;
+        fetchMoodEntries();
+      }).catch((error) => {
+        console.error('Error signing in anonymously:', error);
+        alert('Error signing in anonymously: ' + error.message);
+      });
+    }
+  });
+});
+
+const selectPeriod = (period) => {
+  selectedPeriod.value = period;
 };
 
 const filteredMoodEntries = computed(() => {
@@ -184,7 +194,7 @@ const chartData = computed(() => {
   const labels = entries.map((entry) => entry.date.toLocaleDateString());
   const dataPoints = entries.map((entry) => entry.mood);
 
-  const result = {
+  return {
     labels: labels.reverse(),
     datasets: [
       {
@@ -194,8 +204,6 @@ const chartData = computed(() => {
       },
     ],
   };
-
-  return result;
 });
 
 const chartOptions = {
@@ -239,6 +247,11 @@ const exportChartToPDF = async () => {
   }
 };
 </script>
+
+<style scoped>
+/* (same CSS styles as the original) */
+</style>
+
 
 <style scoped>
 /* Container styles */

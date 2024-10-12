@@ -1,4 +1,4 @@
-// const {onRequest} = require("firebase-functions/v2/https");
+const {onRequest} = require("firebase-functions/v2/https");
 const admin = require("firebase-admin");
 const cors = require("cors")({origin: true});
 const functions = require("firebase-functions");
@@ -7,7 +7,7 @@ admin.initializeApp();
 const db = admin.firestore();
 
 
-exports.addMoodEntry = functions.https.onRequest((req, res) => {
+exports.addMoodEntry = onRequest(async (req, res) => {
   cors(req, res, async () => {
     if (req.method !== "POST") {
       return res.status(405).send("Method Not Allowed");
@@ -57,7 +57,7 @@ exports.addMoodEntry = functions.https.onRequest((req, res) => {
 });
 
 // Function to get mood entries
-exports.getMoodEntries = functions.https.onRequest((req, res) => {
+exports.getMoodEntries = onRequest(async (req, res) => {
   cors(req, res, async () => {
     if (req.method !== "GET") {
       return res.status(405).send("Method Not Allowed");
