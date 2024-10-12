@@ -6,6 +6,11 @@ console.log('User role:', role.value);
 
 const routes = [
   {
+    path: '/email',
+    name: 'Email',
+    component: () => import('../views/EmailTestView.vue')
+  },
+  {
     path: '/FBLogin',
     name: 'FBLogin',
     component: () => import('../views/FBLoginView.vue')
@@ -86,11 +91,11 @@ const routes = [
     name: 'resource',
     component: () => import('../views/ResourceView.vue')
   },
-  {
-    path: '/tests',
-    name: 'tests',
-    component: () => import('../views/TestsView.vue')
-  },
+  // {
+  //   path: '/tests',
+  //   name: 'tests',
+  //   component: () => import('../views/DiscardedViews/TestsView.vue')
+  // },
   {
     path: '/review',
     name: 'review',

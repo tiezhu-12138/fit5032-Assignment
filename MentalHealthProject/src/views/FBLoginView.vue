@@ -4,8 +4,6 @@ import { useRouter } from 'vue-router'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { doc, getDoc } from 'firebase/firestore'
 import { auth, db } from '../firebase/init.js' // Adjust the path if necessary
-
-// Import reactive variables from auth.js
 import { isAuthenticated, isAdmin, isSupport, role } from '../firebase/auth'
 
 
@@ -22,7 +20,6 @@ const submitForm = async () => {
   const password = sanitizeInput(formData.value.password)
 
   try {
-    // Sign in the user with Firebase Auth
     const userCredential = await signInWithEmailAndPassword(auth, email, password)
     const user = userCredential.user
 
@@ -34,7 +31,6 @@ const submitForm = async () => {
       const userData = userDocSnap.data()
       role.value = userData.role
 
-      // Set authentication and role flags
       isAuthenticated.value = true;
       isAdmin.value = role.value === 'admin';
       isSupport.value = role.value === 'support';
@@ -42,7 +38,6 @@ const submitForm = async () => {
       alert('Login successful!')
       router.push({ name: 'home' })
     } else {
-      // User data not found in Firestore
       alert('User data not found.')
     }
   } catch (error) {
@@ -102,7 +97,7 @@ const submitForm = async () => {
 
 <style scoped>
 body {
-  background-color: #395244; /* Sets the background color of the entire page */
+  background-color: #395244; 
   font-family: 'Roboto', sans-serif;
 }
 

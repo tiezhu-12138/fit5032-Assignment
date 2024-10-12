@@ -30,66 +30,7 @@ const clearForm = () => {
   errors.value.confirmPassword = null
 }
 
-// const submitForm = () => {
-//   // Perform validation
-//   validateEmail(true)
-//   validatePassword(true)
-//   validateConfirmPassword(true)
-
-//   if (errors.value.email || errors.value.password || errors.value.confirmPassword) {
-//     alert('Please fix the errors before submitting.')
-//     return
-//   }
-
-//   const email = userInfo.value.email
-//   const password = userInfo.value.password
-
-//   console.log('Auth:', auth)
-//   console.log('Firestore DB:', db)
-
-//   createUserWithEmailAndPassword(auth, email, password)
-//     .then((userCredential) => {
-//       // User registered successfully
-//       const user = userCredential.user
-//       console.log('User registered:', user.uid)
-
-//       let userRole = 'user' // Default role
-//       if (email.toLowerCase().includes('admin')) {
-//         userRole = 'admin'
-//       } else if (email.toLowerCase().includes('support')) {
-//         userRole = 'support'
-//       }
-//       console.log('Assigned role:', userRole)
-
-//       // Save additional user info to Firestore
-//       setDoc(doc(db, 'users', user.uid), {
-//         email: email,
-//         role: userRole,
-//       })
-//         .then(() => {
-//           alert('Registration successful!')
-//           clearForm()
-//           router.push({ name: 'home' })
-//         })
-//         .catch((error) => {
-//           console.error('Error saving user data: ', error)
-//           alert('Error saving user data.')
-//         })
-//     })
-//     .catch((error) => {
-//       console.error('Registration error:', error)
-//       const errorCode = error.code
-//       const errorMessage = error.message
-//       if (errorCode === 'auth/email-already-in-use') {
-//         alert('Email already in use. Please try another one.')
-//         clearForm()
-//       } else {
-//         alert(errorMessage)
-//       }
-//     })
-// }
 const submitForm = async () => {
-  // Perform validation
 
   console.log('Before validation');
   validateEmail(true);
@@ -111,12 +52,10 @@ const submitForm = async () => {
   console.log('Attempting to create user with email:', email);
 
   try {
-    // Create user with Firebase Auth
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     console.log('User registered:', user.uid);
 
-    // Determine user role
     let userRole = 'user'; // Default role
     if (email.toLowerCase().includes('admin')) {
       userRole = 'admin';
@@ -125,7 +64,6 @@ const submitForm = async () => {
     }
     console.log('Assigned role:', userRole);
 
-    // Save additional user info to Firestore
     await setDoc(doc(db, 'users', user.uid), {
       email: email,
       role: userRole,
@@ -147,7 +85,6 @@ const submitForm = async () => {
     }
   }
 };
-
 
 const validateEmail = (blur) => {
   const email = userInfo.value.email

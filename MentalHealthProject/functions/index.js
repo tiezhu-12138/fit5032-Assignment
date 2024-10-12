@@ -18,7 +18,6 @@ exports.addMoodEntry = onRequest(async (req, res) => {
         return;
       }
 
-      // Verify the ID token
       const decodedToken = await admin.auth().verifyIdToken(idToken);
       const userId = decodedToken.uid;
 
@@ -81,83 +80,6 @@ exports.getMoodEntries = onRequest(async (req, res) => {
   });
 });
 
-// // Function to add a review
-// exports.addReview = functions.https.onRequest((req, res) => {
-//   cors(req, res, async () => {
-//     try {
-//       if (req.method !== "POST") {
-//         return res.status(405).send("Method Not Allowed");
-//       }
-
-//       // Get the review data from the request body
-//       const {userId, reviewContent, rating} = req.body;
-
-//       if (!userId || !rating) {
-//         return res.status(400).send("Missing required fields");
-//       }
-
-//       // Create the review object
-//       const reviewData = {
-//         userId,
-//         reviewContent: reviewContent || "No review content",
-//         rating,
-//         date: admin.firestore.FieldValue.serverTimestamp(),
-//       };
-
-//       // Add review to the global "reviews' collection
-//       const reviewRef = await db.collection("reviews").add(reviewData);
-
-//       // Add review to the user's own 'reviews' subcollection
-//       await db
-//           .collection("users")
-//           .doc(userId)
-//           .collection("reviews")
-//           .doc(reviewRef.id)
-//           .set(reviewData);
-
-//       res.status(200).send({success: true, reviewId: reviewRef.id});
-//     } catch (error) {
-//       console.error("Error adding review:", error);
-//       res.status(500).send({success: false, error: error.message});
-//     }
-//   });
-// });
-
-// // Function to get all reviews
-// exports.getReviews = functions.https.onRequest((req, res) => {
-//   cors(req, res, async () => {
-//     try {
-//       if (req.method !== "GET") {
-//         return res.status(405).send("Method Not Allowed");
-//       }
-
-//       const snapshot = await db
-//           .collection("reviews")
-//           .orderBy("date", "desc")
-//           .get();
-
-//       const reviews = snapshot.docs.map((doc, index) => ({
-//         id: doc.id,
-//         serialNumber: index + 1, // Adding serial number
-//         rating: doc.data().rating,
-//         reviewContent: doc.data().reviewContent,
-//         userId: doc.data().userId,
-//         ...doc.data(),
-//         date: doc.data()
-//          .date ? doc
-//          .data().date.toDate().toISOString() : null,
-//       }));
-
-//       res.status(200).send({success: true, reviews});
-//     } catch (error) {
-//       console.error("Error fetching reviews:", error);
-//       res.status(500).send({success: false, error: error.message});
-//     }
-//   });
-// });
-
-
-// Function to add a review
 exports.addReview = functions.https.onRequest((req, res) => {
   cors(req, res, async () => {
     if (req.method !== "POST") {
@@ -191,7 +113,6 @@ exports.addReview = functions.https.onRequest((req, res) => {
   });
 });
 
-// Function to get all reviews
 exports.getReviews = functions.https.onRequest((req, res) => {
   cors(req, res, async () => {
     if (req.method !== "GET") {
@@ -223,6 +144,31 @@ exports.getReviews = functions.https.onRequest((req, res) => {
     } catch (error) {
       console.error("Error fetching reviews:", error);
       res.status(500).send("Internal Server Error");
+    }
+  });
+});
+
+exports.getUserInfo = functions.https.onRequest((req, res) => {
+  if (req.method !== "GET") {
+    return res.status(405).send("Method Not Allowed");
+  }
+
+  cors(req, res, async () => {
+    try {
+      const usersSnapshot = await admin.firestore().collection("users").get();
+      const users = [];
+      usersSnapshot.forEach((doc) => {
+        const data = doc.data();
+        users.push({
+          id: doc.id,
+          email: data.email,
+          role: data.role,
+        });
+      });
+      return res.status(200).json({users});
+    } catch (error) {
+      console.error("Error fetching user info:", error);
+      return res.status(500).send("Internal Server Error");
     }
   });
 });

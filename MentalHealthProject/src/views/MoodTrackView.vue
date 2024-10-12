@@ -52,7 +52,6 @@ import {
 import axios from 'axios'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
-import { initializeApp } from 'firebase/app'
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
 import { auth } from '../firebase/init.js'
 
