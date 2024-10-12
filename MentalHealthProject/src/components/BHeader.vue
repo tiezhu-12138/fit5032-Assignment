@@ -26,9 +26,9 @@ const logout = () => {
           >
         </li>
 
-        <li class="nav-item">
+        <!-- <li class="nav-item">
           <router-link to="/tests" class="nav-link" active-class="active">Self Tests</router-link>
-        </li>
+        </li> -->
 
         <li class="nav-item">
           <router-link to="/moodtrack" class="nav-link" active-class="active"
@@ -44,11 +44,11 @@ const logout = () => {
           <router-link to="/review" class="nav-link" active-class="active">Review</router-link>
         </li>
 
-        <li class="nav-item" v-if="isAdmin || (isSupport && isAuthenticated)">
+        <!-- <li class="nav-item" v-if="isAdmin || (isSupport && isAuthenticated)">
           <router-link to="/appointment" class="nav-link" active-class="active"
             >Appointment</router-link
           >
-        </li>
+        </li> -->
 
         <li class="nav-item" v-if="isAdmin && isAuthenticated">
           <router-link to="/admin" class="nav-link" active-class="active"
@@ -56,9 +56,9 @@ const logout = () => {
           >
         </li>
 
-        <li class="nav-item" v-if="isAuthenticated">
+        <!-- <li class="nav-item" v-if="isAuthenticated">
           <router-link to="/account" class="nav-link" active-class="active">Account</router-link>
-        </li>
+        </li> -->
       </ul>
       <ul class="nav" style="order: 3; padding-right: 20px">
         <li class="nav-item" v-if="!isAuthenticated">

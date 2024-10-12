@@ -35,16 +35,14 @@
             :paginator="true"
             :rows="10"
             :rowsPerPageOptions="[5,10,20]"
-            :filters="filters"
-            :filterDisplay="'row'"
             :responsiveLayout="'scroll'"
             class="p-datatable-striped"
           >
             <Column field="serialNumber" header="#" sortable></Column>
-            <Column field="comment" header="Comment" filter filterPlaceholder="Search by comment"></Column>
+            <Column field="reviewContent" header="Comment" filter filterPlaceholder="Search by comment"></Column>
             <Column field="rating" header="Rating" sortable>
               <template #body="slotProps">
-                <Rating :value="slotProps.data.rating" :readonly="true" :cancel="false" />
+                <Rating :value="slotProps.data.rating" :readonly="true" :cancel="false" :stars="slotProps.data.rating" />
               </template>
             </Column>
             <Column field="date" header="Date" sortable filter filterPlaceholder="Search by date">
@@ -72,21 +70,15 @@ const ratings = ref([])
 const newRating = ref(0)
 const reviewContent = ref('')
 
-const filters = ref({
-  global: { value: null, matchMode: 'contains' },
-  reviewContent: { value: null, matchMode: 'contains' },
-  date: { value: null, matchMode: 'contains' },
-})
-
 const userID = ref(null)
 
 const fetchRatings = async () => {
   try {
     const response = await axios.get('https://us-central1-fit5032project-a3ac5.cloudfunctions.net/getReviews')
     if (response.data.success) {
-      ratings.value = response.data.ratings.map((rating, index) => ({
+      ratings.value = response.data.reviews.map((review, index) => ({
         serialNumber: index + 1,
-        ...rating,
+        ...review,
       }))
     } else {
       alert('Failed to fetch ratings: ' + response.data.error)
@@ -136,24 +128,22 @@ const submitRating = async () => {
     return
   }
 
-  // If comment is empty, set it to "No comment"
   const commentText = reviewContent.value.trim() === '' ? 'No comment' : reviewContent.value.trim()
 
   try {
     const response = await axios.post('https://us-central1-fit5032project-a3ac5.cloudfunctions.net/addReview', {
-      rating: newRating.value,
-      reviewContent: commentText,
       userId: userID.value,
+      reviewContent: commentText,
+      rating: newRating.value,
     })
 
     if (response.data.success) {
-      // Add the new rating to the list
       ratings.value.unshift({
         serialNumber: ratings.value.length + 1,
-        id: response.data.ratingId,
         rating: newRating.value,
         reviewContent: commentText,
         date: new Date().toISOString(),
+        userId: userID.value
       })
       newRating.value = 0
       reviewContent.value = ''
@@ -174,103 +164,74 @@ const submitRating = async () => {
   background-color: #395244;
   font-family: 'Roboto', sans-serif;
   min-height: 100vh;
-  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .content {
+  width: 100%;
   max-width: 1200px;
-  margin: 0 auto;
   background-color: #F6F0E7;
   padding: 20px;
   border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Updated Title */
-.title {
+.title, .subtitle {
   text-align: center;
-  color: #000; /* Changed to black */
-  margin-bottom: 20px;
-  font-weight: bold; /* Made bold */
-}
-
-/* Subtitle */
-.subtitle {
   color: #395244;
-  margin-bottom: 10px;
-  text-align: center;
 }
 
-/* Centered Rating Form */
-.rating-form {
+.rating-form, .ratings-table {
   background-color: #fff;
   padding: 20px;
+  margin-top: 20px;
   border-radius: 10px;
-  margin: 0 auto 20px auto;
-  max-width: 600px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   text-align: center;
 }
 
-/* Center the stars */
 .star-container {
   display: flex;
   justify-content: center;
   margin-bottom: 20px;
 }
 
-.form-label {
+.btn-submit, .form-control, .form-label {
   display: block;
-  margin-bottom: 5px;
-  color: #395244;
-}
-
-.form-control {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  margin: 0 auto;
+  text-align: center;
 }
 
 .btn-submit {
   background-color: #395244;
   color: #fff;
   padding: 10px 20px;
-  border: none;
+  border-radius: 5px;
   cursor: pointer;
+  border: none;
 }
 
 .btn-submit:hover {
   background-color: #45a049;
 }
 
-/* Ratings table styles */
-.ratings-table {
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 10px;
-}
-
-/* PrimeVue DataTable customization */
-.p-datatable .p-datatable-thead > tr > th {
+/* DataTable and Paginator Styles */
+.p-datatable .p-datatable-thead > tr > th,
+.p-datatable .p-datatable-tbody > tr > td,
+.p-paginator .p-paginator-pages .p-paginator-page {
   background-color: #F6F0E7;
   color: #395244;
 }
 
-.p-datatable .p-datatable-tbody > tr > td {
-  color: #333;
-}
-
-.p-paginator .p-paginator-pages .p-paginator-page.p-highlight {
-  background-color: #395244;
-  border-color: #395244;
-}
-
+.p-paginator .p-paginator-pages .p-paginator-page.p-highlight,
 .p-paginator .p-paginator-pages .p-paginator-page:hover {
   background-color: #45a049;
   border-color: #45a049;
 }
 
-.p-datatable .p-datatable-thead > tr > th,
-.p-datatable .p-datatable-tbody > tr > td {
-  text-align: center;
+.p-datatable-striped .p-datatable-tbody > tr:nth-child(odd) {
+  background-color: #eef2f1;
 }
 </style>

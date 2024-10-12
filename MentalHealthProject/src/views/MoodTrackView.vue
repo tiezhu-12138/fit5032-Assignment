@@ -54,21 +54,22 @@ import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
 import { initializeApp } from 'firebase/app'
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
+import { auth } from '../firebase/init.js'
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ...registerables)
 
-const firebaseConfig = {
-  apiKey: 'import.meta.env.VITE_FIREBASE_API_KEY',
-  authDomain: 'fit5032project-a3ac5.firebaseapp.com',
-  projectId: 'fit5032project-a3ac5',
-  storageBucket: 'fit5032project-a3ac5.appspot.com',
-  messagingSenderId: '661781321631',
-  appId: '1:661781321631:web:7cb300fe83bc693b2f0faa',
-  measurementId: 'G-GF9YS45Y69'
-}
+// const firebaseConfig = {
+//   apiKey: 'import.meta.env.VITE_FIREBASE_API_KEY',
+//   authDomain: 'fit5032project-a3ac5.firebaseapp.com',
+//   projectId: 'fit5032project-a3ac5',
+//   storageBucket: 'fit5032project-a3ac5.appspot.com',
+//   messagingSenderId: '661781321631',
+//   appId: '1:661781321631:web:7cb300fe83bc693b2f0faa',
+//   measurementId: 'G-GF9YS45Y69'
+// }
 
-const app = initializeApp(firebaseConfig)
-const auth = getAuth(app)
+// const app = initializeApp(firebaseConfig)
+// const auth = getAuth(app)
 const userId = ref(null)
 
 onAuthStateChanged(auth, (user) => {

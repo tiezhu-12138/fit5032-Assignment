@@ -11,13 +11,12 @@
     <span>{{ weatherData.weather[0].description }}</span>
   </div>
 
- 
   <div class="container">
     <div class="map-container">
       <div ref="mapRef" class="map"></div>
     </div>
     <div class="controls">
-      <button @click="getCurrentLocation" class="action-button">Find Therapists Near Me</button>
+      <button @click="handleGetCurrentLocation" class="action-button">Find Therapists Near Me</button>
       <div class="therapist-list">
         <table class="therapist-table">
           <thead>
@@ -41,7 +40,7 @@
           </tbody>
         </table>
       </div>
-      <button v-if="selectedTherapist" @click="getDirections" class="action-button">
+      <button v-if="selectedTherapist" @click="handleGetDirections" class="action-button">
         Get Directions to {{ selectedTherapist.name }}
       </button>
     </div>
@@ -51,7 +50,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
+import { Loader } from '@googlemaps/js-api-loader'
 
+// References and Reactive Variables
 const mapRef = ref(null)
 const map = ref(null)
 const currentLocation = ref(null)
@@ -68,67 +69,14 @@ const iconUrl = computed(() => {
   return weatherData.value ? `http://openweathermap.org/img/w/${weatherData.value.weather[0].icon}.png` : null
 })
 
-const fetchWeatherData = async (latitude, longitude) => {
-  const apikey = 'import.meta.env.VITE_OPENWEATHER_API_KEY' 
-  try {
-    const url = `http://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apikey}&units=metric`
-    const response = await axios.get(url)
-    weatherData.value = response.data
-  } catch (error) {
-    console.error('Error fetching weather data:', error)
+// Initialize Google Map
+const initializeMap = () => {
+  if (!google || !google.maps) {
+    console.error('Google Maps API is not loaded.')
+    return
   }
-}
 
-onMounted(async () => {
-  try {
-    await loadGoogleMapsAPI()
-    initMap()
-    // Get current location
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const pos = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          }
-          currentLocation.value = pos
-          fetchWeatherData(position.coords.latitude, position.coords.longitude)
-        },
-        (error) => {
-          console.error('Error getting current location:', error)
-        }
-      )
-    } else {
-      console.error("Error: Your browser doesn't support geolocation.")
-    }
-  } catch (error) {
-    console.error('Error loading Google Maps:', error)
-  }
-})
-
-function loadGoogleMapsAPI() {
-  return new Promise((resolve, reject) => {
-    if (typeof window.google === 'object' && typeof window.google.maps === 'object') {
-      resolve()
-      return
-    }
-    const script = document.createElement('script')
-    const googleMapAPI = 'import.meta.env.VITE_GOOGLE_MAPS_API_KEY'
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${googleMapAPI}&libraries=places` 
-    script.async = true
-    script.defer = true
-    script.onload = () => {
-      resolve()
-    }
-    script.onerror = (e) => {
-      reject(e)
-    }
-    document.head.appendChild(script)
-  })
-}
-
-const initMap = () => {
-  const mapInstance = new google.maps.Map(mapRef.value, {
+  map.value = new google.maps.Map(mapRef.value, {
     center: { lat: 0, lng: 0 },
     zoom: 14,
     styles: [
@@ -144,33 +92,88 @@ const initMap = () => {
       }
     ]
   })
-  map.value = mapInstance
 
-  const directionsRendererInstance = new google.maps.DirectionsRenderer()
-  directionsRendererInstance.setMap(mapInstance)
-  directionsRenderer.value = directionsRendererInstance
+  directionsRenderer.value = new google.maps.DirectionsRenderer()
+  directionsRenderer.value.setMap(map.value)
 }
 
-const getCurrentLocation = () => {
-  if (currentLocation.value) {
-    // Use existing current location
-    map.value.setCenter(currentLocation.value)
+// Fetch Weather Data
+const fetchWeatherData = async (latitude, longitude) => {
+  const apikey = import.meta.env.VITE_OPENWEATHER_API_KEY
+  try {
+    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apikey}&units=metric`
+    const response = await axios.get(url)
+    weatherData.value = response.data
+  } catch (error) {
+    console.error('Error fetching weather data:', error)
+  }
+}
+
+// Fetch Nearby Therapists
+const fetchNearbyTherapists = async (latitude, longitude) => {
+  try {
+    const service = new google.maps.places.PlacesService(map.value)
+    service.nearbySearch(
+      {
+        location: { lat: latitude, lng: longitude },
+        radius: 5000,
+        type: ['health'],
+        keyword: 'psychologist OR psychiatrist'
+      },
+      (results, status) => {
+        if (status === google.maps.places.PlacesServiceStatus.OK) {
+          therapists.value = results
+          addTherapistMarkers(results)
+        } else {
+          console.error('Error searching nearby therapists:', status)
+        }
+      }
+    )
+  } catch (error) {
+    console.error('Error fetching therapists:', error)
+  }
+}
+
+// Add Markers for Therapists on the Map
+const addTherapistMarkers = (therapistList) => {
+  therapistList.forEach((therapist) => {
     new google.maps.Marker({
-      position: currentLocation.value,
+      position: therapist.geometry.location,
       map: map.value,
+      title: therapist.name,
       icon: {
-        path: google.maps.SymbolPath.CIRCLE,
-        scale: 10,
-        fillColor: '#395244',
-        fillOpacity: 1,
-        strokeWeight: 2,
-        strokeColor: '#F6F0E7'
+        url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png'
       }
     })
-    searchNearbyTherapists(currentLocation.value)
-  } else if (navigator.geolocation) {
+  })
+}
+
+// Fetch Directions
+const fetchDirections = async (destination) => {
+  if (!currentLocation.value || !selectedTherapist.value) return
+
+  const directionsService = new google.maps.DirectionsService()
+  directionsService.route(
+    {
+      origin: currentLocation.value,
+      destination: selectedTherapist.value.geometry.location,
+      travelMode: google.maps.TravelMode.DRIVING
+    },
+    (result, status) => {
+      if (status === google.maps.DirectionsStatus.OK) {
+        directionsRenderer.value.setDirections(result)
+      } else {
+        console.error('Error: Unable to calculate directions.', status)
+      }
+    }
+  )
+}
+
+// Handle Get Current Location
+const handleGetCurrentLocation = () => {
+  if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
         const pos = {
           lat: position.coords.latitude,
           lng: position.coords.longitude
@@ -189,10 +192,11 @@ const getCurrentLocation = () => {
             strokeColor: '#F6F0E7'
           }
         })
-        searchNearbyTherapists(pos)
+        await fetchWeatherData(pos.lat, pos.lng)
+        await fetchNearbyTherapists(pos.lat, pos.lng)
       },
-      () => {
-        console.error('Error: The Geolocation service failed.')
+      (error) => {
+        console.error('Error getting current location:', error)
       }
     )
   } else {
@@ -200,56 +204,34 @@ const getCurrentLocation = () => {
   }
 }
 
-const searchNearbyTherapists = (location) => {
-  const service = new google.maps.places.PlacesService(map.value)
-  service.nearbySearch(
-    {
-      location: location,
-      radius: 5000,
-      type: ['health'],
-      keyword: 'psychologist OR psychiatrist'
-    },
-    (results, status) => {
-      if (status === google.maps.places.PlacesServiceStatus.OK) {
-        therapists.value = results
-        results.forEach((place) => {
-          new google.maps.Marker({
-            position: place.geometry.location,
-            map: map.value,
-            title: place.name,
-            icon: {
-              url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png'
-            }
-          })
-        })
-      }
-    }
-  )
-}
-
+// Select a Therapist from the List
 const selectTherapist = (therapist) => {
   selectedTherapist.value = therapist
 }
 
-const getDirections = () => {
+// Handle Get Directions
+const handleGetDirections = async () => {
   if (!currentLocation.value || !selectedTherapist.value) return
-
-  const directionsService = new google.maps.DirectionsService()
-  directionsService.route(
-    {
-      origin: currentLocation.value,
-      destination: selectedTherapist.value.geometry.location,
-      travelMode: google.maps.TravelMode.DRIVING
-    },
-    (result, status) => {
-      if (status === google.maps.DirectionsStatus.OK) {
-        directionsRenderer.value.setDirections(result)
-      } else {
-        console.error('Error: Unable to calculate directions.')
-      }
-    }
-  )
+  await fetchDirections(selectedTherapist.value.geometry.location)
 }
+
+// Load Google Maps API and Initialize Map on Mounted
+onMounted(async () => {
+  const loader = new Loader({
+    apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+    version: 'weekly',
+    libraries: ['places']
+  })
+
+  try {
+    await loader.load()
+    initializeMap()
+    // Optionally, you can automatically get the current location on mount
+    // handleGetCurrentLocation()
+  } catch (error) {
+    console.error('Error loading Google Maps:', error)
+  }
+})
 </script>
 
 <style scoped>
@@ -339,5 +321,5 @@ html, body {
   background-color: #f6f0e7;
   color: #395244;
 }
-
 </style>
+

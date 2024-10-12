@@ -28,7 +28,7 @@ const routes = [
   {
     path: '/account',
     name: 'account',
-    component: () => import('../views/AccountView.vue'),
+    component: () => import('../views/DiscardedViews/AccountView.vue'),
     beforEnter: (to, from, next) => {
       if (isAuthenticated.value) {
         next()
@@ -52,7 +52,7 @@ const routes = [
   {
     path: '/appointment',
     name: 'appointment',
-    component: () => import('../views/AppointmentView.vue'),
+    component: () => import('../views/DiscardedViews/AppointmentView.vue'),
     beforEnter: (to, from, next) => {
       if (isAdmin.value || (isSupport.value && isAuthenticated.value)) {
         next()
