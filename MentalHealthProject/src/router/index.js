@@ -5,11 +5,11 @@ console.log('User authenticated:', isAuthenticated.value);
 console.log('User role:', role.value);
 
 const routes = [
-  {
-    path: '/email',
-    name: 'Email',
-    component: () => import('../views/EmailTestView.vue')
-  },
+  // {
+  //   path: '/email',
+  //   name: 'Email',
+  //   component: () => import('../views/DiscardedViews/EmailTestView.vue')
+  // },
   {
     path: '/FBLogin',
     name: 'FBLogin',

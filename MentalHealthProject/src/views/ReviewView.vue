@@ -3,13 +3,9 @@
     <!-- Main content -->
     <main>
       <div class="content">
-        <!-- Updated Title -->
         <h1 class="title">Reviews</h1>
-
-        <!-- Centered Rating Form -->
         <div class="rating-form">
           <h2 class="subtitle">Rate Our Page</h2>
-          <!-- Centered Stars -->
           <div class="star-container">
             <Rating v-model="newRating" :cancel="false" />
           </div>
@@ -159,7 +155,6 @@ const submitRating = async () => {
 </script>
 
 <style>
-/* Styles for the container and content */
 .container {
   background-color: #395244;
   font-family: 'Roboto', sans-serif;
@@ -217,7 +212,6 @@ const submitRating = async () => {
   background-color: #45a049;
 }
 
-/* DataTable and Paginator Styles */
 .p-datatable .p-datatable-thead > tr > th,
 .p-datatable .p-datatable-tbody > tr > td,
 .p-paginator .p-paginator-pages .p-paginator-page {

@@ -171,8 +171,8 @@
           message: '',
         },
         // Attachment Data
-        attachment: null, // Holds the Base64 string
-        attachmentName: '', // Name of the attached file
+        attachment: null, 
+        attachmentName: '', 
   
         // All Users Table Data
         usersAll: [],
@@ -516,7 +516,6 @@
   </script>
   
   <style scoped>
-  /* Set the background color and center all elements */
   .dashboard {
     padding: 40px;
     background-color: #395244;
@@ -526,7 +525,6 @@
     align-items: center;
   }
   
-  /* Rounded rectangles for main parts */
   .email-send-area,
   .users-table {
     background-color: #f6f0e7;
@@ -537,8 +535,7 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     margin-bottom: 40px;
   }
-  
-  /* Form Styling */
+
   .email-send-area form .form-group {
     margin-bottom: 20px;
   }
@@ -606,7 +603,6 @@
     background-color: #1e8449;
   }
   
-  /* Users Table Styling */
   .users-table table {
     width: 100%;
     border-collapse: collapse;
@@ -638,7 +634,6 @@
     transform: scale(1.2);
   }
   
-  /* Search Row Styling */
   .search-row {
     display: flex;
     gap: 10px;
@@ -652,7 +647,6 @@
     border-radius: 5px;
   }
   
-  /* Pagination Styling */
   .pagination {
     display: flex;
     justify-content: center;
@@ -679,7 +673,6 @@
     background-color: #1c5980;
   }
   
-  /* Responsive Design */
   @media (max-width: 768px) {
     .email-send-area,
     .users-table {

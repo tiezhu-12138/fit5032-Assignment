@@ -52,7 +52,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import OpenAI from 'openai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Reactive references for chat input and messages
 const chatInput = ref('')
@@ -71,54 +71,103 @@ const handleMouseOut = (event) => {
 }
 
 // Function to send message to ChatGPT API
+// const sendMessage = async (event) => {
+//   // Prevent default form submission behavior if event is provided
+//   if (event) {
+//     event.preventDefault();
+//   }
+
+//   const userMessage = chatInput.value.trim();
+//   if (!userMessage) return;
+
+//   // Add user's message to chat history
+//   chatMessages.value.push({ sender: 'User', text: userMessage });
+//   chatInput.value = '';
+
+//   try {
+//     // Make API call to OpenAI ChatGPT
+//     const response = await fetch('https://api.openai.com/v1/chat/completions', {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//         'Authorization': `Bearer ${import.meta.env.VITE_CHATGPT_API_KEY}`
+//       },
+//       body: JSON.stringify({
+//         model: "gpt-4", // or 'gpt-3.5-turbo' if you don't have access to GPT-4
+//         messages: [{ role: "user", content: userMessage }],
+//         max_tokens: 1000, // Adjust based on your needs
+//         temperature: 0.7 // Adjust creativity level
+//       })
+//     });
+
+//     // Check if the response is OK (status code 2xx)
+//     if (!response.ok) {
+//       const errorData = await response.json();
+//       throw new Error(errorData.error.message || 'API request failed');
+//     }
+
+//     const data = await response.json();
+//     const botMessage = data.choices[0].message.content.trim();
+
+//     // Add ChatGPT's response to chat history
+//     chatMessages.value.push({ sender: 'ChatGPT', text: botMessage });
+//   } catch (error) {
+//     console.error('Error fetching ChatGPT response:', error);
+//     chatMessages.value.push({
+//       sender: 'Error',
+//       text: error.message || 'Failed to fetch response from ChatGPT.'
+//     });
+//   }
+// };
+
 const sendMessage = async (event) => {
   // Prevent default form submission behavior if event is provided
   if (event) {
-    event.preventDefault()
+    event.preventDefault();
   }
 
-  const userMessage = chatInput.value.trim()
-  if (!userMessage) return
+  const userMessage = chatInput.value.trim();
+  if (!userMessage) return;
 
   // Add user's message to chat history
-  chatMessages.value.push({ sender: 'User', text: userMessage })
-  chatInput.value = ''
+  chatMessages.value.push({ sender: 'User', text: userMessage });
+  chatInput.value = '';
 
   try {
-    // Make API call to OpenAI ChatGPT
-    const openai = new OpenAI({ apiKey: import.meta.env.VITE_CHATGPT_API_KEY, dangerouslyAllowBrowser: true });
-    const response = await fetch('https://api.openai.com/v1/assistants', {
-      method: 'POST',
-      headers: {
-        'OpenAI-Beta': 'assistants=v2',
-        'Content-Type': 'application/json',
-        // Correctly interpolate the API key and add 'Bearer' prefix
-        'Authorization': `Bearer ${import.meta.env.VITE_CHATGPT_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: "gpt-4", // You can switch to 'gpt-4' if you have access
-      })
-    })
+    // Import the Gemini client (ensure you've imported it correctly)
+    // Create a Gemini client instance
+    const client = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+    const model = client.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    // Check if the response is OK (status code 2xx)
-    if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.error.message || 'API request failed')
+    // Define the prompt for Gemini
+    const prompt = `Continue the conversation:
+
+User: ${userMessage}`;
+
+    // Send the prompt to Gemini
+    const response = await model.generateContentStream(prompt);
+
+    // Add initial empty message from Gemini
+    const botMessageObj = { sender: 'Gemini', text: '' };
+    chatMessages.value.push(botMessageObj);
+
+    // Iterate over the response stream
+    for await (const chunk of response.stream) {
+      const chunkText = chunk.text();
+      // Append the chunk text to the bot message
+      botMessageObj.text += chunkText;
     }
 
-    const data = await response.json()
-    const botMessage = data.choices[0].message.content.trim()
-
-    // Add ChatGPT's response to chat history
-    chatMessages.value.push({ sender: 'ChatGPT', text: botMessage })
   } catch (error) {
-    console.error('Error fetching ChatGPT response:', error)
+    console.error('Error fetching Gemini response:', error);
     chatMessages.value.push({
       sender: 'Error',
-      text: error.message || 'Failed to fetch response from ChatGPT.'
-    })
+      text: error.message || 'Failed to fetch response from Gemini.'
+    });
   }
-}
+};
+
+
 </script>
 
 <style scoped>

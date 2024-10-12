@@ -1,5 +1,4 @@
 <template>
-  <!-- Weather Display -->
   <div v-if="weatherData" class="weather-container">
     <h2>
       {{ weatherData.name }}, {{ weatherData.sys.country }}
@@ -23,7 +22,6 @@
             <tr>
               <th>Name</th>
               <th>Address</th>
-              <!-- Add more columns as needed -->
             </tr>
           </thead>
           <tbody>
@@ -35,7 +33,6 @@
             >
               <td>{{ therapist.name }}</td>
               <td>{{ therapist.vicinity }}</td>
-              <!-- Add more cells as needed -->
             </tr>
           </tbody>
         </table>
@@ -52,7 +49,6 @@ import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import { Loader } from '@googlemaps/js-api-loader'
 
-// References and Reactive Variables
 const mapRef = ref(null)
 const map = ref(null)
 const currentLocation = ref(null)
@@ -60,7 +56,6 @@ const therapists = ref([])
 const selectedTherapist = ref(null)
 const directionsRenderer = ref(null)
 
-// Weather Data
 const weatherData = ref(null)
 const temperature = computed(() => {
   return weatherData.value ? Math.round(weatherData.value.main.temp) : null
@@ -69,7 +64,6 @@ const iconUrl = computed(() => {
   return weatherData.value ? `http://openweathermap.org/img/w/${weatherData.value.weather[0].icon}.png` : null
 })
 
-// Initialize Google Map
 const initializeMap = () => {
   if (!google || !google.maps) {
     console.error('Google Maps API is not loaded.')
@@ -97,7 +91,6 @@ const initializeMap = () => {
   directionsRenderer.value.setMap(map.value)
 }
 
-// Fetch Weather Data
 const fetchWeatherData = async (latitude, longitude) => {
   const apikey = import.meta.env.VITE_OPENWEATHER_API_KEY
   try {
@@ -109,7 +102,6 @@ const fetchWeatherData = async (latitude, longitude) => {
   }
 }
 
-// Fetch Nearby Therapists
 const fetchNearbyTherapists = async (latitude, longitude) => {
   try {
     const service = new google.maps.places.PlacesService(map.value)
@@ -134,7 +126,6 @@ const fetchNearbyTherapists = async (latitude, longitude) => {
   }
 }
 
-// Add Markers for Therapists on the Map
 const addTherapistMarkers = (therapistList) => {
   therapistList.forEach((therapist) => {
     new google.maps.Marker({
@@ -148,7 +139,6 @@ const addTherapistMarkers = (therapistList) => {
   })
 }
 
-// Fetch Directions
 const fetchDirections = async (destination) => {
   if (!currentLocation.value || !selectedTherapist.value) return
 
@@ -169,7 +159,6 @@ const fetchDirections = async (destination) => {
   )
 }
 
-// Handle Get Current Location
 const handleGetCurrentLocation = () => {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
@@ -204,18 +193,15 @@ const handleGetCurrentLocation = () => {
   }
 }
 
-// Select a Therapist from the List
 const selectTherapist = (therapist) => {
   selectedTherapist.value = therapist
 }
 
-// Handle Get Directions
 const handleGetDirections = async () => {
   if (!currentLocation.value || !selectedTherapist.value) return
   await fetchDirections(selectedTherapist.value.geometry.location)
 }
 
-// Load Google Maps API and Initialize Map on Mounted
 onMounted(async () => {
   const loader = new Loader({
     apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
@@ -226,8 +212,6 @@ onMounted(async () => {
   try {
     await loader.load()
     initializeMap()
-    // Optionally, you can automatically get the current location on mount
-    // handleGetCurrentLocation()
   } catch (error) {
     console.error('Error loading Google Maps:', error)
   }
@@ -235,7 +219,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* Ensure html and body elements cover the full height */
 html, body {
   margin: 0;
   padding: 0;
@@ -243,7 +226,6 @@ html, body {
   background-color: #f6f0e7;
 }
 
-/* Weather Container styles */
 .weather-container {
   padding: 16px;
   background-color: #f6f0e7;
@@ -251,7 +233,6 @@ html, body {
   text-align: center;
 }
 
-/* Container styles */
 .container {
   display: flex;
   flex-direction: column;
@@ -259,33 +240,30 @@ html, body {
   background-color: #f6f0e7;
 }
 
-/* Map styles */
 .map-container {
   height: 50vh;
   margin: 0;
   position: relative;
-  background-color: #f6f0e7; /* Set the background color */
-  width: 100%;              /* Ensure it fills the full width */
-  margin: 0;                /* Remove any margins */
-  padding: 0;               /* Remove any paddings */
+  background-color: #f6f0e7; 
+  width: 100%;
+  margin: 0;
+  padding: 0; 
 }
 
 .map {
   width: 100%;
   height: 100%;
-  background-color: #f6f0e7; /* Optional: Set background color if needed */
+  background-color: #f6f0e7; 
 }
 
-/* Controls styles */
 .controls {
   padding: 16px;
   background-color: #395244;
   color: #f6f0e7;
   flex: 1;
-  overflow-x: hidden; /* Hide overflow on X-axis to prevent horizontal scroll on the controls container */
+  overflow-x: hidden; 
 }
 
-/* Buttons styles */
 .action-button {
   width: 100%;
   background-color: #f6f0e7;
@@ -301,14 +279,13 @@ html, body {
   background-color: #d8d2c9;
 }
 
-/* Therapist list styles */
 .therapist-list {
-  overflow-x: auto; /* Allow horizontal scrolling */
+  overflow-x: auto; 
   margin-bottom: 16px;
 }
 
 .therapist-table {
-  width: 120%; /* Set table width greater than 100% */
+  width: 120%; 
   border-collapse: collapse;
 }
 
