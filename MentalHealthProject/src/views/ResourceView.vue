@@ -262,12 +262,18 @@ html, body {
 /* Map styles */
 .map-container {
   height: 50vh;
+  margin: 0;
   position: relative;
+  background-color: #f6f0e7; /* Set the background color */
+  width: 100%;              /* Ensure it fills the full width */
+  margin: 0;                /* Remove any margins */
+  padding: 0;               /* Remove any paddings */
 }
 
 .map {
   width: 100%;
   height: 100%;
+  background-color: #f6f0e7; /* Optional: Set background color if needed */
 }
 
 /* Controls styles */
@@ -322,4 +328,3 @@ html, body {
   color: #395244;
 }
 </style>
-

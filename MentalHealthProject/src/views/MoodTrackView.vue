@@ -5,7 +5,14 @@
       <h2>Record Your Mood</h2>
       <form @submit.prevent="addMoodEntry">
         <label for="mood">Mood (1-10):</label>
-        <input type="number" id="mood" v-model.number="newMood.mood" min="1" max="10" required />
+        <input
+          type="number"
+          id="mood"
+          v-model.number="newMood.mood"
+          min="1"
+          max="10"
+          required
+        />
 
         <label for="notes">Notes:</label>
         <textarea id="notes" v-model="newMood.notes" placeholder="Optional"></textarea>
@@ -27,7 +34,10 @@
     </div>
 
     <!-- Mood Chart -->
-    <div class="chart-container" v-if="chartData && chartData.labels && chartData.labels.length > 0">
+    <div
+      class="chart-container"
+      v-if="chartData && chartData.labels && chartData.labels.length > 0"
+    >
       <Bar ref="moodChart" :data="chartData" :options="chartOptions" />
     </div>
 
@@ -37,8 +47,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { Bar } from 'vue-chartjs'
+import { ref, computed, onMounted } from 'vue';
+import { Bar } from 'vue-chartjs';
 import {
   Chart as ChartJS,
   Title,
@@ -47,54 +57,51 @@ import {
   BarElement,
   CategoryScale,
   LinearScale,
-  registerables
-} from 'chart.js'
-import axios from 'axios'
-import html2canvas from 'html2canvas'
-import jsPDF from 'jspdf'
-import { getAuth, onAuthStateChanged } from 'firebase/auth'
-import { auth } from '../firebase/init.js'
+  registerables,
+} from 'chart.js';
+import axios from 'axios';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../firebase/init.js';
 
-ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ...registerables)
+ChartJS.register(
+  Title,
+  Tooltip,
+  Legend,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  ...registerables
+);
 
-// const firebaseConfig = {
-//   apiKey: 'import.meta.env.VITE_FIREBASE_API_KEY',
-//   authDomain: 'fit5032project-a3ac5.firebaseapp.com',
-//   projectId: 'fit5032project-a3ac5',
-//   storageBucket: 'fit5032project-a3ac5.appspot.com',
-//   messagingSenderId: '661781321631',
-//   appId: '1:661781321631:web:7cb300fe83bc693b2f0faa',
-//   measurementId: 'G-GF9YS45Y69'
-// }
-
-// const app = initializeApp(firebaseConfig)
-// const auth = getAuth(app)
-const userId = ref(null)
+const userId = ref(null);
 
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    userId.value = user.uid
-    loadMoodEntries()
+    userId.value = user.uid;
+    loadMoodEntries();
   } else {
-    console.error('User not authenticated')
+    console.error('User not authenticated');
   }
-})
+});
 
 const newMood = ref({
   mood: null,
-  notes: ''
-})
+  notes: '',
+});
 
-const moodEntries = ref([])
+const moodEntries = ref([]);
 
 const periods = [
   { label: '1 Week', value: 'week' },
   { label: 'Fortnight', value: 'fortnight' },
-  { label: 'Month', value: 'month' }
-]
+  { label: 'Month', value: 'month' },
+];
 
-const selectedPeriod = ref('week')
+const selectedPeriod = ref('week');
 
+// When adding a mood entry
 const addMoodEntry = async () => {
   if (!userId.value) {
     console.error('User not authenticated');
@@ -104,15 +111,17 @@ const addMoodEntry = async () => {
   const auth = getAuth();
   const idToken = await auth.currentUser.getIdToken();
 
+  // Prepare the data to match the Cloud Function's expectations
   const entry = {
-    mood: newMood.value.mood,
-    notes: newMood.value.notes,
+    mood: newMood.value.mood, // Should be a number
+    notes: newMood.value.notes, // Should be a string
   };
 
   try {
     await axios.post('https://addmoodentry-zhlxrzxjda-uc.a.run.app', entry, {
       headers: {
         Authorization: `Bearer ${idToken}`,
+        'Content-Type': 'application/json',
       },
     });
     await loadMoodEntries();
@@ -123,9 +132,10 @@ const addMoodEntry = async () => {
   }
 };
 
+
 const selectPeriod = (period) => {
-  selectedPeriod.value = period
-}
+  selectedPeriod.value = period;
+};
 
 const loadMoodEntries = async () => {
   if (!userId.value) {
@@ -155,24 +165,24 @@ const loadMoodEntries = async () => {
 };
 
 const filteredMoodEntries = computed(() => {
-  const allEntries = moodEntries.value || []
-  const now = new Date()
-  let days = 7
-  if (selectedPeriod.value === 'fortnight') days = 14
-  else if (selectedPeriod.value === 'month') days = 30
+  const allEntries = moodEntries.value || [];
+  const now = new Date();
+  let days = 7;
+  if (selectedPeriod.value === 'fortnight') days = 14;
+  else if (selectedPeriod.value === 'month') days = 30;
 
   return allEntries.filter((entry) => {
-    if (!entry.date) return false
-    const diffTime = now - entry.date
-    const diffDays = diffTime / (1000 * 60 * 60 * 24)
-    return diffDays <= days
-  })
-})
+    if (!entry.date) return false;
+    const diffTime = now - entry.date;
+    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+    return diffDays <= days;
+  });
+});
 
 const chartData = computed(() => {
-  const entries = filteredMoodEntries.value || []
-  const labels = entries.map((entry) => entry.date.toLocaleDateString())
-  const dataPoints = entries.map((entry) => entry.mood)
+  const entries = filteredMoodEntries.value || [];
+  const labels = entries.map((entry) => entry.date.toLocaleDateString());
+  const dataPoints = entries.map((entry) => entry.mood);
 
   const result = {
     labels: labels.reverse(),
@@ -180,13 +190,13 @@ const chartData = computed(() => {
       {
         label: 'Mood Score',
         backgroundColor: '#395244',
-        data: dataPoints.reverse()
-      }
-    ]
-  }
+        data: dataPoints.reverse(),
+      },
+    ],
+  };
 
-  return result
-})
+  return result;
+});
 
 const chartOptions = {
   responsive: true,
@@ -196,32 +206,38 @@ const chartOptions = {
       min: 0,
       max: 10,
       ticks: {
-        stepSize: 1
-      }
-    }
-  }
-}
+        stepSize: 1,
+      },
+    },
+  },
+  plugins: {
+    legend: {
+      labels: {
+        color: '#395244',
+      },
+    },
+  },
+};
 
-// Function to export chart to PDF
 const exportChartToPDF = async () => {
-  const chartElement = document.querySelector('.chart-container')
+  const chartElement = document.querySelector('.chart-container');
 
   if (chartElement) {
     try {
-      const canvas = await html2canvas(chartElement)
-      const imgData = canvas.toDataURL('image/png')
+      const canvas = await html2canvas(chartElement);
+      const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({
         orientation: 'landscape',
         unit: 'pt',
-        format: [canvas.width, canvas.height]
-      })
-      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height)
-      pdf.save('mood_chart.pdf')
+        format: [canvas.width, canvas.height],
+      });
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save('mood_chart.pdf');
     } catch (error) {
-      console.error('Error exporting chart to PDF:', error)
+      console.error('Error exporting chart to PDF:', error);
     }
   }
-}
+};
 </script>
 
 <style scoped>
@@ -232,24 +248,32 @@ const exportChartToPDF = async () => {
   padding: 20px;
   min-height: 100vh;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* Mood entry form styles */
 .mood-entry {
   margin-bottom: 30px;
+  width: 100%;
+  max-width: 500px;
 }
 
 .mood-entry h2 {
   margin-bottom: 15px;
+  text-align: center;
 }
 
 .mood-entry form {
   display: flex;
   flex-direction: column;
+  align-items: center;
 }
 
 .mood-entry label {
   margin-bottom: 5px;
+  width: 100%;
 }
 
 .mood-entry input[type='number'],
@@ -260,6 +284,8 @@ const exportChartToPDF = async () => {
   border-radius: 4px;
   background-color: #fff;
   color: #395244;
+  width: 100%;
+  max-width: 400px;
 }
 
 .mood-entry textarea {
@@ -285,6 +311,8 @@ const exportChartToPDF = async () => {
 .tabs {
   display: flex;
   margin-bottom: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 .tab-button {
@@ -306,7 +334,13 @@ const exportChartToPDF = async () => {
 /* Chart container styles */
 .chart-container {
   position: relative;
-  height: 300px;
+  width: 100%;
+  max-width: 800px;
+  height: 400px;
+}
+
+.chartjs-render-monitor {
+  background-color: #fff !important;
 }
 
 /* Export button styles */

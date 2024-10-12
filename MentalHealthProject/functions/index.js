@@ -1,4 +1,4 @@
-const {onRequest} = require("firebase-functions/v2/https");
+// const {onRequest} = require("firebase-functions/v2/https");
 const admin = require("firebase-admin");
 const cors = require("cors")({origin: true});
 const functions = require("firebase-functions");
@@ -6,76 +6,98 @@ const functions = require("firebase-functions");
 admin.initializeApp();
 const db = admin.firestore();
 
-exports.addMoodEntry = onRequest(async (req, res) => {
+
+exports.addMoodEntry = functions.https.onRequest((req, res) => {
   cors(req, res, async () => {
-    try {
-      // Get the ID token from the Authorization header
-      const idToken = req.headers.authorization ?
-      req.headers.authorization.split("Bearer ")[1] : null;
-
-      if (!idToken) {
-        res.status(401).send({success: false, error: "Unauthorized"});
-        return;
-      }
-
-      const decodedToken = await admin.auth().verifyIdToken(idToken);
-      const userId = decodedToken.uid;
-
-      const {mood, notes} = req.body;
-
-      const entry = {
-        mood,
-        notes,
-        date: admin.firestore.FieldValue.serverTimestamp(),
-      };
-
-      await db
-          .collection("users")
-          .doc(userId)
-          .collection("moodEntries")
-          .add(entry);
-
-      res.status(200).send({success: true});
-    } catch (error) {
-      console.error("Error adding mood entry:", error);
-      res.status(500).send({success: false, error: error.message});
+    if (req.method !== "POST") {
+      return res.status(405).send("Method Not Allowed");
     }
+
+    // Manually parse the request body
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk.toString();
+    });
+
+    req.on("end", async () => {
+      try {
+        if (body) {
+          req.body = JSON.parse(body);
+        } else {
+          req.body = {};
+        }
+
+        const {userID, mood, notes = ""} = req.body;
+
+        if (!userID || mood == null) {
+          return res.status(400).send("Missing required fields");
+        }
+
+        const moodEntryData = {
+          userID,
+          mood,
+          notes,
+          date: admin.firestore.FieldValue.serverTimestamp(),
+        };
+
+        // Add the mood entry to the user"s moodEntries subcollection
+        const moodEntryRef = await db
+            .collection("users")
+            .doc(userID)
+            .collection("moodEntries")
+            .add(moodEntryData);
+
+        res.status(200).send({success: true, moodEntryId: moodEntryRef.id});
+      } catch (error) {
+        console.error("Error adding mood entry:", error);
+        res.status(500).send("Internal Server Error");
+      }
+    });
   });
 });
 
-exports.getMoodEntries = onRequest(async (req, res) => {
+// Function to get mood entries
+exports.getMoodEntries = functions.https.onRequest((req, res) => {
   cors(req, res, async () => {
+    if (req.method !== "GET") {
+      return res.status(405).send("Method Not Allowed");
+    }
+
+    // Extract userID from query parameters
+    const userID = req.query.userID;
+
+    if (!userID) {
+      return res.status(400).send("Missing required parameter: userID");
+    }
+
     try {
-      // Get the ID token from the Authorization header
-      const idToken = req.headers.authorization ?
-      req.headers.authorization.split("Bearer ")[1] : null;
-
-      if (!idToken) {
-        res.status(401).send({success: false, error: "Unauthorized"});
-        return;
-      }
-
-      // Verify the ID token
-      const decodedToken = await admin.auth().verifyIdToken(idToken);
-      const userId = decodedToken.uid;
-      console.log("Decoded userId:", userId);
-
       const snapshot = await db
           .collection("users")
-          .doc(userId)
+          .doc(userID)
           .collection("moodEntries")
           .orderBy("date", "desc")
           .get();
 
-      const entries = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      if (snapshot.empty) {
+        return res.status(404).send("No mood entries found");
+      }
 
-      res.status(200).send(entries);
+      const moodEntries = snapshot.docs.map((doc, index) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          serialNumber: index + 1,
+          mood: data.mood,
+          notes: data.notes,
+          userID: data.userID,
+          date: data.date ? data.date.toDate().toISOString() : null,
+        };
+      });
+
+      res.status(200).send({success: true, moodEntries});
     } catch (error) {
-      console.error("Error retrieving mood entries:", error);
-      res.status(500).send({success: false, error: error.message});
+      console.error("Error fetching mood entries:", error);
+      res.status(500).send("Internal Server Error");
     }
   });
 });
