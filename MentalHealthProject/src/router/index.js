@@ -26,40 +26,11 @@ const routes = [
     component: () => import('../views/HomeView.vue')
   },
   {
-    path: '/about',
-    name: 'about',
-    component: () => import('../views/DiscardedViews/AboutView.vue')
-  },
-  {
-    path: '/account',
-    name: 'account',
-    component: () => import('../views/DiscardedViews/AccountView.vue'),
-    beforEnter: (to, from, next) => {
-      if (isAuthenticated.value) {
-        next()
-      } else {
-        next({ name: 'login' })
-      }
-    }
-  },
-  {
     path: '/admin',
     name: 'admin',
     component: () => import('../views/AdminView.vue'),
     beforEnter: (to, from, next) => {
       if (isAdmin.value && isAuthenticated.value) {
-        next()
-      } else {
-        next({ name: 'FBlogin' })
-      }
-    }
-  },
-  {
-    path: '/appointment',
-    name: 'appointment',
-    component: () => import('../views/DiscardedViews/AppointmentView.vue'),
-    beforEnter: (to, from, next) => {
-      if (isAdmin.value || (isSupport.value && isAuthenticated.value)) {
         next()
       } else {
         next({ name: 'FBlogin' })
